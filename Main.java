@@ -3,7 +3,8 @@ import java.util.ArrayList;
 public class Main {
 	
 	public static void main(String args[]) {
-		Database db = new Database();
+		DatabaseSQLite db = new DatabaseSQLite();
+		db = db.getInstance();
 		ArrayList<User> listUsers =new ArrayList<User>();
 		User Clara = new User("Clacla","Clara","Tricot","1234");
 		User Antoine = new User("Goldby","Antoine","Mairet","1234");
