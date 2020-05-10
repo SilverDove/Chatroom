@@ -1,5 +1,7 @@
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class DatabaseSQLite extends AbstractDatabase {
 	
@@ -11,6 +13,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 		private String sql;
 		private Connection con = null;
 		private Statement st = null;
+		private SimpleDateFormat format = new SimpleDateFormat("yyyy-mm-dd hh:mm"); 
 		
 	//Singleton Pattern
 		private static DatabaseSQLite uniqueInstance = new DatabaseSQLite();
@@ -85,14 +88,14 @@ public class DatabaseSQLite extends AbstractDatabase {
 		                + "	firstname varchar(20)NOT NULL, "
 		                + "	lastname varchar(20)NOT NULL, "
 		                + "	password varchar(20) NOT NULL,"
-		                + "	lastConnection datetime DEFAULT CURRENT_TIMESTAMP,"
+		                + "	lastConnection varchar(20),"
 		                + " CONSTRAINT unique_username UNIQUE(username));";                
 				ExecuteQuery(sql);	//execute the query     
 				
 				sql = "CREATE TABLE IF NOT EXISTS room"
 		                + "	(idRoom integer PRIMARY KEY AUTOINCREMENT,"
 		                + "	name varchar(20) NOT NULL, "
-		                + "	creationDate datetime NOT NULL,"
+		                + "	creationDate varchar(20),"
 		                + " CONSTRAINT unique_room UNIQUE(name)); ";             
 				ExecuteQuery(sql);	//execute the query     
 				
@@ -108,7 +111,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 		                + "	(idMessage INTEGER PRIMARY KEY AUTOINCREMENT,"
 		                + "	idUser INTEGER , "
 		                + " idRoom INTEGER , "
-		                + " timeSent datetime NOT NULL , "
+		                + " timeSent varchar(20) NOT NULL , "
 		                + " message text NOT NULL, "
 		                + "	FOREIGN KEY(idUser) REFERENCES user(idUser), "
 		                + "	FOREIGN KEY(idRoom) REFERENCES room(idRoom)"
@@ -171,27 +174,28 @@ public class DatabaseSQLite extends AbstractDatabase {
 		public void updateTimeConnectionUser(String username) {//Update the connection time of the user
 			
 			connect();//Open the database
-				
+			Date aujourdhui = new Date();
+		    String date = format.format(aujourdhui);	
 			//Query to change the date
-		    sql = "UPDATE user set lastConnection = datetime('now') where username = '"+username+"'  ;";
+		    sql = "UPDATE user set lastConnection = '"+date+"' where username = '"+username+"'  ;";
 		    ExecuteQuery(sql);	//execute the query  
 		        
 		    close();//Close the database
 		}
 		
-		public void SaveMessage(String messageSend, Date datetime, String username, String roomName) {//Save messages send and receive 
+		public void SaveMessage(String messageSend, String username, String roomName) {//Save messages send and receive 
 			ResultSet rs = null;	
 			
 			connect();//Open the database
 				
 		        //Query to save a message into the database
-		        rs=ResultQuery("select idUser, idRoom from participants where idUser is (select id from user where username = '"+username+"') and idRoom is (select idRoom from room where name = '"+roomName+"');");
+		        rs=ResultQuery("select idUser, idRoom from participants where idUser is (select idUser from user where username = '"+username+"') and idRoom is (select idRoom from room where name = '"+roomName+"');");
 		        try {
 					while (rs.next()) {
 						int idUser = rs.getInt("idUser");
 						int idRoom = rs.getInt("idRoom");
 						
-						ExecuteQuery("insert into message (idUser,idRoom,timeSent datetime,message) values ('"+idUser+", '"+idRoom+", '"+datetime+", '"+messageSend+";");
+						ExecuteQuery("insert into message (idUser,idRoom,timeSent,message) values ('"+idUser+"', '"+idRoom+"', datetime('now'), '"+messageSend+"');");
 					}
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -206,7 +210,8 @@ public class DatabaseSQLite extends AbstractDatabase {
 		public void creationRoomXUsers(String nameRoom,ArrayList<User> listUsers) {
 			StringBuilder sb = new StringBuilder();
 			ResultSet rs = null;
-			
+		    Date aujourdhui = new Date();
+		    String date = format.format(aujourdhui);
 			connect();//Open the database
 				
 			if (nameRoom == null) { // Change the name of the conversation by a default one
@@ -218,7 +223,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 			}
 				
 			sql = " INSERT INTO Room ( name, creationDate) "   // Creation of the room
-			       + " VALUES ('"+nameRoom+"',datetime('now')); ";
+			       + " VALUES ('"+nameRoom+"','"+date+"'); ";
 			ExecuteQuery(sql);//execute the query
 			    	
 			rs=ResultQuery("SELECT MAX(idRoom) as idRoom FROM room;"); // Fetch the id of the room created before
@@ -242,4 +247,32 @@ public class DatabaseSQLite extends AbstractDatabase {
 		        
 		     close();//close the database			
 		}		
+		
+		public ArrayList<Message> retrieveListOfMessageFromRoom(int idRoom){
+			ArrayList<Message> listMessages = new ArrayList<Message>();
+			ResultSet rs = null;
+			Message message;
+			int idUser,idMessage;
+			String text, timeSent;
+			connect();//Open the database
+			
+			rs=ResultQuery("select idMessage, idUser,timeSent,message from Message where idRoom ="+idRoom+"");
+	        try {
+				while (rs.next()) {
+				
+				    idMessage = rs.getInt("idMessage");
+				    idUser = rs.getInt("idUser");
+				    timeSent = rs.getString("timeSent");
+				    text = rs.getString("message");
+				    
+				    
+				    message = new Message(idMessage,idUser,text,timeSent);			    
+				    listMessages.add(message);
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+	        
+			return listMessages;
+		}
 }
