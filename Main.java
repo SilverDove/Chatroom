@@ -18,11 +18,11 @@ public class Main {
 		User Nicolas = new User("Nico","Nicolas","Jatob","1234");
 		
 		db.createNewDatabase(); // Connections with the database and creation of tables if database is new				
-		db.addUser(Clara);
-		db.addUser(Antoine);
-		db.addUser(Karen);
-		db.addUser(Stella);
-		db.addUser(Nicolas);
+		db.CreateAccount(Clara);
+		db.CreateAccount(Antoine);
+		db.CreateAccount(Karen);
+		db.CreateAccount(Stella);
+		db.CreateAccount(Nicolas);
 		
 		
 		listUsers.add(Stella);
