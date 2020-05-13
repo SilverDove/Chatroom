@@ -123,7 +123,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 				System.out.println("Tables created successfully");
 		}
 		
-		public void addUser(User user) {//Add a new user into the database (sign up)
+		public void CreateAccount(User user) {//Add a new user into the database (sign up)
 			
 			connect();//Open the database
 		        
@@ -134,7 +134,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 		        
 		    close();//Close the database
 
-		    System.out.println("Records created successfully");
+		    System.out.println("New account created successfully");
 		   
 		}
 		
@@ -201,7 +201,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 					e.printStackTrace();
 				}
 		        
-		        updateTimeConnectionUser(username);//MAYBE USE TRIGGER
+		        updateTimeConnectionUser(username);
 		        
 		      //Close the database
 				close();//Close the database
@@ -256,7 +256,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 			String text, timeSent;
 			connect();//Open the database
 			
-			rs=ResultQuery("select idMessage, idUser,timeSent,message from Message where idRoom ="+idRoom+"");
+			rs=ResultQuery("select idMessage, idUser,timeSent,message from Message where idRoom ="+idRoom+";");
 	        try {
 				while (rs.next()) {
 				
@@ -275,4 +275,91 @@ public class DatabaseSQLite extends AbstractDatabase {
 	        
 			return listMessages;
 		}
+		
+		public void deleteMessage(String messageToDelete, String username, String roomName) {//Delete message from the conversation
+			ResultSet rs = null;	
+			
+			connect();//Open the database
+				
+		        //Query to delete a message from the database
+		        rs=ResultQuery("select idUser, idRoom from participants where idUser is (select idUser from user where username = '"+username+"') and idRoom is (select idRoom from room where name = '"+roomName+"');");
+		        try {
+					while (rs.next()) {
+						int idUser = rs.getInt("idUser");
+						int idRoom = rs.getInt("idRoom");
+						
+						ExecuteQuery("delete from message where idUser = "+idUser+"' and idRoom = '"+idRoom+" and message = '"+messageToDelete+"';");
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+		        
+		        updateTimeConnectionUser(username);
+		        
+		      //Close the database
+				close();//Close the database
+		}
+		
+		public ArrayList<User> listContact() {//returns the list of contact
+			ResultSet rs = null;	
+			
+			String userName, firstName, lastName, password;
+			
+			ArrayList<User> contactList = new ArrayList<User>();
+			
+			connect();//Open the database
+				
+		        //Query to get the contact list 
+		        rs=ResultQuery("select * from user;");
+		        try {
+					while (rs.next()) {
+						userName = rs.getString("username");
+						firstName = rs.getString("firstname");
+						lastName = rs.getString("lastname");
+						password = rs.getString("password");
+						
+						contactList.add(new User(userName, firstName, lastName, password));
+						
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+		        
+		      //Close the database
+				close();//Close the database
+				
+				return contactList;
+		}
+		
+		public void addFriend(String userName, String roomName) {//add a user into a conversation
+			
+			ResultSet rs = null, rs2=null;
+			
+			String userID, roomID;
+			
+			connect();//Open the database
+				
+		        //Query to get the contact list 
+		        rs=ResultQuery("select idUser from user where userName = '"+userName+"';");
+		        rs2=ResultQuery("select idRoom from room where roomNam = '"+roomName+"';");
+		        try {
+					while (rs.next()) {
+						userID = rs.getString("idUser");
+					}
+					while (rs2.next()) {
+						roomID = rs2.getString("idRoom");
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+		        
+		        ExecuteQuery("insert into Participants (idUser, idRoom) values ('"+userName+"', '"+roomName+"')");
+		        
+		      //Close the database
+				close();//Close the database
+		}
+		
+		/*public Message getMessage() {
+			//TODO:get the latest message from the room 
+		}*/
 }
