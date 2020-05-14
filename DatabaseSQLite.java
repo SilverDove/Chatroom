@@ -23,7 +23,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 			st = null;
 		}
 		
-		public static DatabaseSQLite getInstance() {
+		public static DatabaseSQLite getInstance() {//get the unique instance of the database
 			return uniqueInstance;
 		}
 		
@@ -35,6 +35,9 @@ public class DatabaseSQLite extends AbstractDatabase {
 				con=DriverManager.getConnection(DB_URL);
 				//Execute a query
 				st= con.createStatement();
+				
+				System.out.println("*** Connection succeed ***");
+				
 	        } catch (ClassNotFoundException notFoundException) {
 	            notFoundException.printStackTrace();
 	            System.out.println("Connection error");
@@ -42,8 +45,6 @@ public class DatabaseSQLite extends AbstractDatabase {
 	            sqlException.printStackTrace();
 	            System.out.println("Connection error");
 	        }
-			
-			System.out.println("*** Connection succeed ***");
 		}
 		
 		public void close() {
@@ -158,15 +159,19 @@ public class DatabaseSQLite extends AbstractDatabase {
 				    if ( (username.equals(username1)) && (password.equals(password1)) ) { // Check if the username and password match with a user
 				    	flag=true;
 				    	System.out.println("Welcome back,"+firstname+" "+lastname);
+				    	
+				    	updateTimeConnectionUser(username);
 				    }
 				 }
+				
+				if (flag==false) { // we didn't find it 
+			    	 System.out.println("Username or password wrong ! Retry");
+			     }
+				
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-		     if (flag==false) { // we didn't find it 
-		    	 System.out.println("Username or password wrong ! Retry");
-		     }
-		    
+	   
 		     close();//Close the database
 			
 		}
@@ -174,6 +179,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 		public void updateTimeConnectionUser(String username) {//Update the connection time of the user
 			
 			connect();//Open the database
+			
 			Date aujourdhui = new Date();
 		    String date = format.format(aujourdhui);	
 			//Query to change the date
@@ -197,11 +203,12 @@ public class DatabaseSQLite extends AbstractDatabase {
 						
 						ExecuteQuery("insert into message (idUser,idRoom,timeSent,message) values ('"+idUser+"', '"+idRoom+"', datetime('now'), '"+messageSend+"');");
 					}
+					
+					updateTimeConnectionUser(username);
+					
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
-		        
-		        updateTimeConnectionUser(username);
 		        
 		      //Close the database
 				close();//Close the database
@@ -288,13 +295,14 @@ public class DatabaseSQLite extends AbstractDatabase {
 						int idUser = rs.getInt("idUser");
 						int idRoom = rs.getInt("idRoom");
 						
-						ExecuteQuery("delete from message where idUser = "+idUser+"' and idRoom = '"+idRoom+" and message = '"+messageToDelete+"';");
+						ExecuteQuery("delete from message where idUser = "+idUser+" and idRoom = "+idRoom+" and message = '"+messageToDelete+"';");
 					}
+					
+			        updateTimeConnectionUser(username);
+					
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
-		        
-		        updateTimeConnectionUser(username);
 		        
 		      //Close the database
 				close();//Close the database
@@ -335,25 +343,23 @@ public class DatabaseSQLite extends AbstractDatabase {
 			
 			ResultSet rs = null, rs2=null;
 			
-			String userID, roomID;
+			String userID= null, roomID = null;
 			
 			connect();//Open the database
 				
 		        //Query to get the contact list 
-		        rs=ResultQuery("select idUser from user where userName = '"+userName+"';");
-		        rs2=ResultQuery("select idRoom from room where roomNam = '"+roomName+"';");
+		        rs=ResultQuery("select idUser from user where username = '"+userName+"';");
+		        System.out.println("YES");
+		        rs2=ResultQuery("select idRoom from room where name = '"+roomName+"';");
 		        try {
-					while (rs.next()) {
-						userID = rs.getString("idUser");
-					}
-					while (rs2.next()) {
-						roomID = rs2.getString("idRoom");
-					}
+					userID = rs.getString("idUser");
+					roomID = rs2.getString("idRoom");
+					
+					ExecuteQuery("insert into Participants (idRoom, idUser) values ('"+roomID+"','"+userID+"');");
+					
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
-		        
-		        ExecuteQuery("insert into Participants (idUser, idRoom) values ('"+userName+"', '"+roomName+"')");
 		        
 		      //Close the database
 				close();//Close the database

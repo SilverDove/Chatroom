@@ -8,9 +8,12 @@ import java.util.Locale;
 public class Main {
 	
 	public static void main(String args[]) throws ParseException {
-		DatabaseSQLite db = new DatabaseSQLite();
+		DatabaseSQLite db = DatabaseSQLite.getInstance();
 		ArrayList<User> listUsers =new ArrayList<User>();
 		ArrayList<Message> listMessage =new ArrayList<Message>();
+		
+		db.addFriend("Goldby", "DuoTest");
+		
 		/*User Clara = new User("Clacla","Clara","Tricot","1234");
 		User Antoine = new User("Goldby","Antoine","Mairet","1234");
 		User Karen = new User("Kk","Karen","Kaspar","1234");
@@ -27,20 +30,15 @@ public class Main {
 		
 		listUsers.add(Stella);
 		listUsers.add(Karen);
-		db.creationRoomXUsers("DuoTest",listUsers);
+		db.creationRoomXUsers("DuoTest",listUsers);*/
 		
-		/*db.logIn("Goldby","1234");
-				
-		db.updateTimeConnectionUser("Goldby");
-		
-		db.viewTable("user");
-		db.viewTable("message");
-		db.viewTable("participants");
-		db.viewTable("room");*/
+		//db.logIn("Goldby","1234");
 		
 		/*db.SaveMessage("Message 1","Kk","DuoTest");
 		db.SaveMessage("Message 2","Stellouch","DuoTest");
 		db.SaveMessage("Message 3","Stellouch","DuoTest");*/
+		
+		//db.deleteMessage("Message 2", "Stellouch", "DuoTest");//Delete message from the conversation
 		
 		/*listMessage = db.retrieveListOfMessageFromRoom(1);
 		for(Message m : listMessage) {
