@@ -12,31 +12,33 @@ public class Main {
 		ArrayList<User> listUsers =new ArrayList<User>();
 		ArrayList<Message> listMessage =new ArrayList<Message>();
 		
-		db.addFriend("Goldby", "DuoTest");
+		//db.createNewDatabase(); // Connections with the database and creation of tables if database is new		
 		
-		/*User Clara = new User("Clacla","Clara","Tricot","1234");
+		//db.addFriend("Goldby", "DuoTest");
+		
+		User Clara = new User("Clacla","Clara","Tricot","1234");
 		User Antoine = new User("Goldby","Antoine","Mairet","1234");
 		User Karen = new User("Kk","Karen","Kaspar","1234");
 		User Stella = new User("Stellouch","Stella","Thammavong","1234");
 		User Nicolas = new User("Nico","Nicolas","Jatob","1234");
 		
-		db.createNewDatabase(); // Connections with the database and creation of tables if database is new				
-		db.CreateAccount(Clara);
+				
+		/*db.CreateAccount(Clara);
 		db.CreateAccount(Antoine);
 		db.CreateAccount(Karen);
 		db.CreateAccount(Stella);
-		db.CreateAccount(Nicolas);
+		db.CreateAccount(Nicolas);*/
 		
-		
-		listUsers.add(Stella);
+		/*listUsers.add(Stella);
 		listUsers.add(Karen);
-		db.creationRoomXUsers("DuoTest",listUsers);*/
+		db.creationRoomXUsers("DuoTest6",listUsers); //ERROR HERE
+		*/
 		
 		//db.logIn("Goldby","1234");
 		
-		/*db.SaveMessage("Message 1","Kk","DuoTest");
+		db.SaveMessage("Message 1","Kk","DuoTest");//Message not saved (WTF ?!)
 		db.SaveMessage("Message 2","Stellouch","DuoTest");
-		db.SaveMessage("Message 3","Stellouch","DuoTest");*/
+		db.SaveMessage("Message 3","Stellouch","DuoTest");
 		
 		//db.deleteMessage("Message 2", "Stellouch", "DuoTest");//Delete message from the conversation
 		

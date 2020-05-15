@@ -3,11 +3,17 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import org.h2.jdbc.JdbcSQLSyntaxErrorException;
+
 public class DatabaseSQLite extends AbstractDatabase {
 	
 	//JDBC driver name and database URL
-		private static final String JDBC_DRIVER = "org.sqlite.JDBC";
-		private static final String DB_URL = "jdbc:sqlite:test.db";
+		private static final String JDBC_DRIVER = "org.h2.Driver";
+		private static final String DB_URL = "jdbc:h2:tcp://localhost/~/test";
+		
+	//Database credentials
+		private static final String USER = "sa";
+		private static final String PASS = "";
 		
 	//Variables	
 		private String sql;
@@ -32,7 +38,8 @@ public class DatabaseSQLite extends AbstractDatabase {
 				//Register JDBC driver 
 				Class.forName(JDBC_DRIVER);
 				//Open a connection
-				con=DriverManager.getConnection(DB_URL);
+				System.out.println("Connecting to database...");
+				con=DriverManager.getConnection(DB_URL, USER, PASS);
 				//Execute a query
 				st= con.createStatement();
 				
@@ -80,48 +87,51 @@ public class DatabaseSQLite extends AbstractDatabase {
 		
 		public void createNewDatabase(){//Creation of our database	
 			connect();//Open the database
-				
-				//Create tables if they don't exist
-
-				sql = "CREATE TABLE IF NOT EXISTS user"
-		                + "	(idUser integer PRIMARY KEY AUTOINCREMENT ,"
-		                + "	username varchar(20) NOT NULL  , "
-		                + "	firstname varchar(20)NOT NULL, "
-		                + "	lastname varchar(20)NOT NULL, "
-		                + "	password varchar(20) NOT NULL,"
-		                + "	lastConnection varchar(20),"
-		                + " CONSTRAINT unique_username UNIQUE(username));";                
-				ExecuteQuery(sql);	//execute the query     
-				
-				sql = "CREATE TABLE IF NOT EXISTS room"
-		                + "	(idRoom integer PRIMARY KEY AUTOINCREMENT,"
-		                + "	name varchar(20) NOT NULL, "
-		                + "	creationDate varchar(20),"
-		                + " CONSTRAINT unique_room UNIQUE(name)); ";             
-				ExecuteQuery(sql);	//execute the query     
-				
-				sql = "CREATE TABLE IF NOT EXISTS participants"
-		                + "	(idRoom INTEGER ,"
-		                + "	idUser INTEGER , "
-		                + "	FOREIGN KEY(idUser) REFERENCES user(idUser), "
-		                + "	FOREIGN KEY(idRoom) REFERENCES room(idRoom),"
-		                + " CONSTRAINT unique_user_room UNIQUE(idRoom, idUser)); ";
-				ExecuteQuery(sql);	//execute the query     
-				
-				sql = "CREATE TABLE IF NOT EXISTS message"
-		                + "	(idMessage INTEGER PRIMARY KEY AUTOINCREMENT,"
-		                + "	idUser INTEGER , "
-		                + " idRoom INTEGER , "
-		                + " timeSent varchar(20) NOT NULL , "
-		                + " message text NOT NULL, "
-		                + "	FOREIGN KEY(idUser) REFERENCES user(idUser), "
-		                + "	FOREIGN KEY(idRoom) REFERENCES room(idRoom)"
-		                + " CONSTRAINT unique_message UNIQUE(idMessage, idUser, idRoom)); "; 
-				ExecuteQuery(sql);	//execute the query     
-				
-				close();//Close the database
 			
-				System.out.println("Tables created successfully");
+			//Create tables if they don't exist
+			System.out.println("Creating tables in given database ...");
+			
+			sql = "CREATE TABLE IF NOT EXISTS user"
+			        + "	(idUser INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,"
+			        + "	username VARCHAR(20) NOT NULL  , "
+			        + "	firstname VARCHAR(20) NOT NULL, "
+			        + "	lastname varchar(20) NOT NULL, "
+			        + "	password varchar(20) NOT NULL,"
+			        + "	lastConnection varchar(20),"
+			        + " CONSTRAINT unique_username UNIQUE(username));";                
+			ExecuteQuery(sql);	//execute the query     
+			
+			sql = "CREATE TABLE IF NOT EXISTS room"
+			        + "	(idRoom integer PRIMARY KEY AUTO_INCREMENT NOT NULL,"
+			        + "	name varchar(20) NOT NULL, "
+			        + "	creationDate varchar(20),"
+			        + " CONSTRAINT unique_room UNIQUE(name)); ";             
+			ExecuteQuery(sql);	//execute the query     
+			
+			sql = "CREATE TABLE IF NOT EXISTS participants"
+			        + "	(idRoom INTEGER ,"
+			        + "	idUser INTEGER , "
+			        + "	FOREIGN KEY(idUser) REFERENCES user(idUser), "
+			        + "	FOREIGN KEY(idRoom) REFERENCES room(idRoom),"
+			        + " CONSTRAINT unique_user_room UNIQUE(idRoom, idUser)); ";
+			ExecuteQuery(sql);	//execute the query     
+			
+			sql = "CREATE TABLE IF NOT EXISTS message"
+			        + "	(idMessage INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,"
+			        + "	idUser INTEGER , "
+			        + " idRoom INTEGER , "
+			        + " timeSent varchar(20) NOT NULL , "
+			        + " message text NOT NULL, "
+			        + "	FOREIGN KEY(idUser) REFERENCES user(idUser), "
+			        + "	FOREIGN KEY(idRoom) REFERENCES room(idRoom),"
+			        + " CONSTRAINT unique_message UNIQUE(idMessage, idUser, idRoom)); "; 
+			ExecuteQuery(sql);	//execute the query     
+
+
+			System.out.println("Tables created successfully");
+			
+			close();//Close the database	
+				
 		}
 		
 		public void CreateAccount(User user) {//Add a new user into the database (sign up)
@@ -204,6 +214,8 @@ public class DatabaseSQLite extends AbstractDatabase {
 						ExecuteQuery("insert into message (idUser,idRoom,timeSent,message) values ('"+idUser+"', '"+idRoom+"', datetime('now'), '"+messageSend+"');");
 					}
 					
+					System.out.println("Message save");
+					
 					updateTimeConnectionUser(username);
 					
 				} catch (SQLException e) {
@@ -228,25 +240,33 @@ public class DatabaseSQLite extends AbstractDatabase {
 				sb.delete(sb.length()-2, sb.length());
 				nameRoom = sb.toString();
 			}
+			
+			System.out.println("1");
 				
 			sql = " INSERT INTO Room ( name, creationDate) "   // Creation of the room
 			       + " VALUES ('"+nameRoom+"','"+date+"'); ";
 			ExecuteQuery(sql);//execute the query
+			
+			System.out.println("2");
 			    	
 			rs=ResultQuery("SELECT MAX(idRoom) as idRoom FROM room;"); // Fetch the id of the room created before
+			System.out.println("3");
 			int idRoom;
 			try {
 				idRoom = rs.getInt("idRoom");
-		   	
+				System.out.println("BEFORE FOR");
 				for  (User user : listUsers) {
 					// Fetch the userId of the user1
+					System.out.println("FOR ;)");
 				   rs=ResultQuery("SELECT idUser FROM user where username = '"+user.getUsername()+"';"); 
+				   System.out.println("4");
 				   int idUser = rs.getInt("idUser");		    	
 			    			    
 				   // Fill the table participants to link user with room
 				    sql = " INSERT INTO Participants ( idUser, idRoom) "  
 						+ " VALUES ('"+idUser+"','"+idRoom+"'); ";
 				    ExecuteQuery(sql);
+				    System.out.println("5");
 				 }
 			} catch (SQLException e) {
 				e.printStackTrace();
