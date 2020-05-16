@@ -34,6 +34,8 @@ public class DatabaseSQLite extends AbstractDatabase {
 		}
 		
 		public void connect() {
+			con = null;
+			st = null;
 			try {
 				//Register JDBC driver 
 				Class.forName(JDBC_DRIVER);
@@ -187,16 +189,12 @@ public class DatabaseSQLite extends AbstractDatabase {
 		}
 		
 		public void updateTimeConnectionUser(String username) {//Update the connection time of the user
-			
-			connect();//Open the database
-			
-			Date aujourdhui = new Date();
-		    String date = format.format(aujourdhui);	
 			//Query to change the date
-		    sql = "UPDATE user set lastConnection = '"+date+"' where username = '"+username+"'  ;";
-		    ExecuteQuery(sql);	//execute the query  
+		    sql = "UPDATE user set lastConnection = FORMATDATETIME(CURRENT_TIMESTAMP(), 'yyyy-MM-dd hh:mm:ss') where username = '"+username+"'  ;";
+		    System.out.println("Please");
+		    ExecuteQuery(sql);	//execute the query
+		    System.out.println("At the end of updateTimeConnecionUser");
 		        
-		    close();//Close the database
 		}
 		
 		public void SaveMessage(String messageSend, String username, String roomName) {//Save messages send and receive 
@@ -206,24 +204,29 @@ public class DatabaseSQLite extends AbstractDatabase {
 				
 		        //Query to save a message into the database
 		        rs=ResultQuery("select idUser, idRoom from participants where idUser is (select idUser from user where username = '"+username+"') and idRoom is (select idRoom from room where name = '"+roomName+"');");
+		        System.out.println("Get query of Save Message");
+		        int idUser, idRoom;
 		        try {
 					while (rs.next()) {
-						int idUser = rs.getInt("idUser");
-						int idRoom = rs.getInt("idRoom");
+						idUser = rs.getInt("idUser");
+						idRoom = rs.getInt("idRoom");
 						
-						ExecuteQuery("insert into message (idUser,idRoom,timeSent,message) values ('"+idUser+"', '"+idRoom+"', datetime('now'), '"+messageSend+"');");
+						con.createStatement().execute("insert into message (idUser,idRoom,timeSent,message) values ('"+idUser+"', '"+idRoom+"', FORMATDATETIME(CURRENT_TIMESTAMP(), 'yyyy-MM-dd hh:mm:ss'), '"+messageSend+"');");
+						System.out.println("Get query of Save Message 2");
 					}
 					
 					System.out.println("Message save");
 					
 					updateTimeConnectionUser(username);
+					System.out.println("Get time update!");
 					
 				} catch (SQLException e) {
 					e.printStackTrace();
+				}finally {
+				      //Close the database
+						close();//Close the database
 				}
-		        
-		      //Close the database
-				close();//Close the database
+
 		}
 			
 		public void creationRoomXUsers(String nameRoom,ArrayList<User> listUsers) {
@@ -251,17 +254,22 @@ public class DatabaseSQLite extends AbstractDatabase {
 			    	
 			rs=ResultQuery("SELECT MAX(idRoom) as idRoom FROM room;"); // Fetch the id of the room created before
 			System.out.println("3");
-			int idRoom;
+			int idRoom=-1;
+			int idUser = -1;
 			try {
-				idRoom = rs.getInt("idRoom");
-				System.out.println("BEFORE FOR");
+				while (rs.next()) {
+					idRoom = rs.getInt("idRoom");
+				}
+				System.out.println("BEFORE FOR: "+idRoom);
 				for  (User user : listUsers) {
 					// Fetch the userId of the user1
 					System.out.println("FOR ;)");
 				   rs=ResultQuery("SELECT idUser FROM user where username = '"+user.getUsername()+"';"); 
 				   System.out.println("4");
-				   int idUser = rs.getInt("idUser");		    	
-			    			    
+				   while (rs.next()) {
+					   idUser = rs.getInt("idUser");
+				   }
+				   		    			    
 				   // Fill the table participants to link user with room
 				    sql = " INSERT INTO Participants ( idUser, idRoom) "  
 						+ " VALUES ('"+idUser+"','"+idRoom+"'); ";
@@ -371,11 +379,17 @@ public class DatabaseSQLite extends AbstractDatabase {
 		        rs=ResultQuery("select idUser from user where username = '"+userName+"';");
 		        System.out.println("YES");
 		        rs2=ResultQuery("select idRoom from room where name = '"+roomName+"';");
+		        System.out.println("Yes2");
 		        try {
-					userID = rs.getString("idUser");
-					roomID = rs2.getString("idRoom");
+		        	while (rs.next()) {
+						userID = rs.getString("idUser");
+		        	}
+		        	System.out.println("PLEASE");
+		        	while (rs2.next()) {
+						roomID = rs2.getString("idRoom");
+		        	}
 					
-					ExecuteQuery("insert into Participants (idRoom, idUser) values ('"+roomID+"','"+userID+"');");
+		        	con.createStatement().execute("insert into Participants (idRoom, idUser) values ('"+roomID+"','"+userID+"');");
 					
 				} catch (SQLException e) {
 					e.printStackTrace();

@@ -1,4 +1,6 @@
 import java.util.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -14,15 +16,14 @@ public class Main {
 		
 		//db.createNewDatabase(); // Connections with the database and creation of tables if database is new		
 		
-		//db.addFriend("Goldby", "DuoTest");
+		db.addFriend("Goldby", "DuoTest7");
 		
 		User Clara = new User("Clacla","Clara","Tricot","1234");
 		User Antoine = new User("Goldby","Antoine","Mairet","1234");
 		User Karen = new User("Kk","Karen","Kaspar","1234");
 		User Stella = new User("Stellouch","Stella","Thammavong","1234");
 		User Nicolas = new User("Nico","Nicolas","Jatob","1234");
-		
-				
+
 		/*db.CreateAccount(Clara);
 		db.CreateAccount(Antoine);
 		db.CreateAccount(Karen);
@@ -31,14 +32,13 @@ public class Main {
 		
 		/*listUsers.add(Stella);
 		listUsers.add(Karen);
-		db.creationRoomXUsers("DuoTest6",listUsers); //ERROR HERE
-		*/
-		
+		db.creationRoomXUsers("DuoTest7",listUsers);*/
+			
 		//db.logIn("Goldby","1234");
 		
-		db.SaveMessage("Message 1","Kk","DuoTest");//Message not saved (WTF ?!)
-		db.SaveMessage("Message 2","Stellouch","DuoTest");
-		db.SaveMessage("Message 3","Stellouch","DuoTest");
+		/*db.SaveMessage("Message 1","Kk","DuoTest7");//Message not saved (WTF ?!)
+		db.SaveMessage("Message 2","Stellouch","DuoTest7");
+		db.SaveMessage("Message 3","Stellouch","DuoTest7");*/
 		
 		//db.deleteMessage("Message 2", "Stellouch", "DuoTest");//Delete message from the conversation
 		
