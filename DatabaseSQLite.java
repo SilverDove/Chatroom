@@ -68,6 +68,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 		public ResultSet ResultQuery(String request) {
 			ResultSet result = null;
 		       try {
+		    	   st = con.createStatement();
 		           result = st.executeQuery(request);
 		       } catch (SQLException e) {
 		           e.printStackTrace();
@@ -161,8 +162,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 		    rs = ResultQuery("SELECT * FROM user;");// Fetch all the users
 		        
 		    try {
-				while ( (rs.next()) && (flag==false) ) { // We go through all users and stop if we find it	
-					//int id = rs.getInt("idUser");
+				while (rs.next()) { // We go through all users and stop if we find it	
 				    String  username1 = rs.getString("username");
 				    String  firstname = rs.getString("firstname");
 				    String  lastname = rs.getString("lastname");
@@ -173,6 +173,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 				    	System.out.println("Welcome back,"+firstname+" "+lastname);
 				    	
 				    	updateTimeConnectionUser(username);
+				    	break;
 				    }
 				 }
 				
@@ -323,7 +324,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 						int idUser = rs.getInt("idUser");
 						int idRoom = rs.getInt("idRoom");
 						
-						ExecuteQuery("delete from message where idUser = "+idUser+" and idRoom = "+idRoom+" and message = '"+messageToDelete+"';");
+						con.createStatement().execute("delete from message where idUser = "+idUser+" and idRoom = "+idRoom+" and message = '"+messageToDelete+"';");
 					}
 					
 			        updateTimeConnectionUser(username);

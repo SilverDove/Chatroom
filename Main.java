@@ -23,6 +23,11 @@ public class Main {
 		User Karen = new User("Kk","Karen","Kaspar","1234");
 		User Stella = new User("Stellouch","Stella","Thammavong","1234");
 		User Nicolas = new User("Nico","Nicolas","Jatob","1234");
+		
+		/*listUsers = db.listContact();
+		for (int i=0; i< listUsers.size(); i ++) {
+			System.out.println("name is "+listUsers.get(i).getUsername());
+		}*/
 
 		/*db.CreateAccount(Clara);
 		db.CreateAccount(Antoine);
@@ -40,9 +45,9 @@ public class Main {
 		db.SaveMessage("Message 2","Stellouch","DuoTest7");
 		db.SaveMessage("Message 3","Stellouch","DuoTest7");*/
 		
-		//db.deleteMessage("Message 2", "Stellouch", "DuoTest");//Delete message from the conversation
+		//db.deleteMessage("Message 2", "Stellouch", "DuoTest7");//Delete message from the conversation
 		
-		/*listMessage = db.retrieveListOfMessageFromRoom(1);
+		/*listMessage = db.retrieveListOfMessageFromRoom(35);
 		for(Message m : listMessage) {
 			m.toString();
 		}*/
