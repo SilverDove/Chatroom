@@ -35,16 +35,12 @@ public class DatabaseSQLite extends AbstractDatabase {
 		
 		public void connect() {
 			con = null;
-			st = null;
 			try {
 				//Register JDBC driver 
 				Class.forName(JDBC_DRIVER);
 				//Open a connection
 				System.out.println("Connecting to database...");
 				con=DriverManager.getConnection(DB_URL, USER, PASS);
-				//Execute a query
-				st= con.createStatement();
-				
 				System.out.println("*** Connection succeed ***");
 				
 	        } catch (ClassNotFoundException notFoundException) {
@@ -58,8 +54,8 @@ public class DatabaseSQLite extends AbstractDatabase {
 		
 		public void close() {
 			try {
-				st.close();
 				con.close();
+				st.close();
 	        } catch (SQLException e) {
 	            e.printStackTrace();
 	        }
@@ -73,19 +69,19 @@ public class DatabaseSQLite extends AbstractDatabase {
 		       } catch (SQLException e) {
 		           e.printStackTrace();
 		           System.out.println("Request error : " + request);
-		       }	
+		       }
 		       
 		      return result;
 		}
 		
 		public void ExecuteQuery(String request) {
 		       try {
+		    	   st = con.createStatement();
 		           st.execute(request);
-		           System.out.println("rs succeed");
 		       } catch (SQLException e) {
 		           e.printStackTrace();
 		           System.out.println("Request error : " + request);
-		       }	  
+		       }
 		}
 		
 		public void createNewDatabase(){//Creation of our database	
@@ -183,18 +179,16 @@ public class DatabaseSQLite extends AbstractDatabase {
 				
 			} catch (SQLException e) {
 				e.printStackTrace();
+			}finally {
+			     close();//Close the database	
 			}
-	   
-		     close();//Close the database
-			
+
 		}
 		
 		public void updateTimeConnectionUser(String username) {//Update the connection time of the user
 			//Query to change the date
 		    sql = "UPDATE user set lastConnection = FORMATDATETIME(CURRENT_TIMESTAMP(), 'yyyy-MM-dd hh:mm:ss') where username = '"+username+"'  ;";
-		    System.out.println("Please");
 		    ExecuteQuery(sql);	//execute the query
-		    System.out.println("At the end of updateTimeConnecionUser");
 		        
 		}
 		
@@ -205,14 +199,13 @@ public class DatabaseSQLite extends AbstractDatabase {
 				
 		        //Query to save a message into the database
 		        rs=ResultQuery("select idUser, idRoom from participants where idUser is (select idUser from user where username = '"+username+"') and idRoom is (select idRoom from room where name = '"+roomName+"');");
-		        System.out.println("Get query of Save Message");
 		        int idUser, idRoom;
 		        try {
 					while (rs.next()) {
 						idUser = rs.getInt("idUser");
 						idRoom = rs.getInt("idRoom");
 						
-						con.createStatement().execute("insert into message (idUser,idRoom,timeSent,message) values ('"+idUser+"', '"+idRoom+"', FORMATDATETIME(CURRENT_TIMESTAMP(), 'yyyy-MM-dd hh:mm:ss'), '"+messageSend+"');");
+						ExecuteQuery("insert into message (idUser,idRoom,timeSent,message) values ('"+idUser+"', '"+idRoom+"', FORMATDATETIME(CURRENT_TIMESTAMP(), 'yyyy-MM-dd hh:mm:ss'), '"+messageSend+"');");
 						System.out.println("Get query of Save Message 2");
 					}
 					
@@ -244,29 +237,21 @@ public class DatabaseSQLite extends AbstractDatabase {
 				sb.delete(sb.length()-2, sb.length());
 				nameRoom = sb.toString();
 			}
-			
-			System.out.println("1");
 				
 			sql = " INSERT INTO Room ( name, creationDate) "   // Creation of the room
 			       + " VALUES ('"+nameRoom+"','"+date+"'); ";
 			ExecuteQuery(sql);//execute the query
-			
-			System.out.println("2");
 			    	
 			rs=ResultQuery("SELECT MAX(idRoom) as idRoom FROM room;"); // Fetch the id of the room created before
-			System.out.println("3");
 			int idRoom=-1;
 			int idUser = -1;
 			try {
 				while (rs.next()) {
 					idRoom = rs.getInt("idRoom");
 				}
-				System.out.println("BEFORE FOR: "+idRoom);
 				for  (User user : listUsers) {
 					// Fetch the userId of the user1
-					System.out.println("FOR ;)");
 				   rs=ResultQuery("SELECT idUser FROM user where username = '"+user.getUsername()+"';"); 
-				   System.out.println("4");
 				   while (rs.next()) {
 					   idUser = rs.getInt("idUser");
 				   }
@@ -275,13 +260,17 @@ public class DatabaseSQLite extends AbstractDatabase {
 				    sql = " INSERT INTO Participants ( idUser, idRoom) "  
 						+ " VALUES ('"+idUser+"','"+idRoom+"'); ";
 				    ExecuteQuery(sql);
-				    System.out.println("5");
+				    
 				 }
+				
+				System.out.println("Group for chat created with sucess");
+				
 			} catch (SQLException e) {
 				e.printStackTrace();
+			}finally {
+				close();//close the database	
 			}
-		        
-		     close();//close the database			
+		
 		}		
 		
 		public ArrayList<Message> retrieveListOfMessageFromRoom(int idRoom){
@@ -305,8 +294,14 @@ public class DatabaseSQLite extends AbstractDatabase {
 				    message = new Message(idMessage,idUser,text,timeSent);			    
 				    listMessages.add(message);
 				}
+				
+				
+				System.out.println("Get all messages");
+				
 			} catch (SQLException e) {
 				e.printStackTrace();
+			}finally {
+				close();//close the database	
 			}
 	        
 			return listMessages;
@@ -324,17 +319,18 @@ public class DatabaseSQLite extends AbstractDatabase {
 						int idUser = rs.getInt("idUser");
 						int idRoom = rs.getInt("idRoom");
 						
-						con.createStatement().execute("delete from message where idUser = "+idUser+" and idRoom = "+idRoom+" and message = '"+messageToDelete+"';");
+						ExecuteQuery("delete from message where idUser = "+idUser+" and idRoom = "+idRoom+" and message = '"+messageToDelete+"';");
 					}
 					
 			        updateTimeConnectionUser(username);
+			        
+			        System.out.println("Message deleted with success");
 					
 				} catch (SQLException e) {
 					e.printStackTrace();
+				}finally {        
+				     close();//close the database	
 				}
-		        
-		      //Close the database
-				close();//Close the database
 		}
 		
 		public ArrayList<User> listContact() {//returns the list of contact
@@ -360,10 +356,9 @@ public class DatabaseSQLite extends AbstractDatabase {
 					}
 				} catch (SQLException e) {
 					e.printStackTrace();
+				}finally {
+				     close();//close the database	
 				}
-		        
-		      //Close the database
-				close();//Close the database
 				
 				return contactList;
 		}
@@ -378,26 +373,24 @@ public class DatabaseSQLite extends AbstractDatabase {
 				
 		        //Query to get the contact list 
 		        rs=ResultQuery("select idUser from user where username = '"+userName+"';");
-		        System.out.println("YES");
 		        rs2=ResultQuery("select idRoom from room where name = '"+roomName+"';");
-		        System.out.println("Yes2");
 		        try {
 		        	while (rs.next()) {
 						userID = rs.getString("idUser");
 		        	}
-		        	System.out.println("PLEASE");
 		        	while (rs2.next()) {
 						roomID = rs2.getString("idRoom");
 		        	}
 					
-		        	con.createStatement().execute("insert into Participants (idRoom, idUser) values ('"+roomID+"','"+userID+"');");
+		        	ExecuteQuery("insert into Participants (idRoom, idUser) values ('"+roomID+"','"+userID+"');");
+		        	
+		        	System.out.println("Person added correctly to the group");
 					
 				} catch (SQLException e) {
 					e.printStackTrace();
+				}finally {
+					close();//close the database	
 				}
-		        
-		      //Close the database
-				close();//Close the database
 		}
 		
 		/*public Message getMessage() {

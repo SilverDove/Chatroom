@@ -14,43 +14,54 @@ public class Main {
 		ArrayList<User> listUsers =new ArrayList<User>();
 		ArrayList<Message> listMessage =new ArrayList<Message>();
 		
+		/*Creation of the database*/
 		//db.createNewDatabase(); // Connections with the database and creation of tables if database is new		
 		
-		db.addFriend("Goldby", "DuoTest7");
-		
+		/*List of contacts*/
 		User Clara = new User("Clacla","Clara","Tricot","1234");
 		User Antoine = new User("Goldby","Antoine","Mairet","1234");
 		User Karen = new User("Kk","Karen","Kaspar","1234");
 		User Stella = new User("Stellouch","Stella","Thammavong","1234");
 		User Nicolas = new User("Nico","Nicolas","Jatob","1234");
 		
-		/*listUsers = db.listContact();
-		for (int i=0; i< listUsers.size(); i ++) {
-			System.out.println("name is "+listUsers.get(i).getUsername());
-		}*/
-
 		/*db.CreateAccount(Clara);
 		db.CreateAccount(Antoine);
 		db.CreateAccount(Karen);
 		db.CreateAccount(Stella);
-		db.CreateAccount(Nicolas);*/
+		db.CreateAccount(Nicolas);
 		
+		listUsers = db.listContact();
+		for (int i=0; i< listUsers.size(); i ++) {
+			System.out.println("Surname: "+listUsers.get(i).getUsername()+" FirstName: "+listUsers.get(i).getFirstname()+" LastName: "+listUsers.get(i).getLastname()+" Password: "+listUsers.get(i).getPassword());
+		}*/
+		
+		
+		/*Create a Conversation*/
 		/*listUsers.add(Stella);
 		listUsers.add(Karen);
-		db.creationRoomXUsers("DuoTest7",listUsers);*/
-			
+		db.creationRoomXUsers("DuoTest",listUsers);*/
+		
+		/*Add friend into a group*/
+		//db.addFriend("Goldby", "DuoTest");
+		
+		/*LogIn*/	
 		//db.logIn("Goldby","1234");
 		
-		/*db.SaveMessage("Message 1","Kk","DuoTest7");//Message not saved (WTF ?!)
-		db.SaveMessage("Message 2","Stellouch","DuoTest7");
-		db.SaveMessage("Message 3","Stellouch","DuoTest7");*/
+		/*Save Message*/
+		/*db.SaveMessage("Coucou, ça va?","Kk","DuoTest");//Message not saved (WTF ?!)
+		db.SaveMessage("Ouais et toi ?","Stellouch","DuoTest");
+		db.SaveMessage("Tu as bien profité ton week-end?","Stellouch","DuoTest");*/
 		
-		//db.deleteMessage("Message 2", "Stellouch", "DuoTest7");//Delete message from the conversation
+		/*Delete Message*/
+		//db.deleteMessage("Tu as bien profité ton week-end?", "Stellouch", "DuoTest");//Delete message from the conversation
 		
-		/*listMessage = db.retrieveListOfMessageFromRoom(35);
+		/*List of Message*/
+		/*listMessage = db.retrieveListOfMessageFromRoom(1);
 		for(Message m : listMessage) {
 			m.toString();
 		}*/
+		
+		
 		/*
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-mm-dd hh:mm"); 
 	    Date aujourdhui = new Date();
