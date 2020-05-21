@@ -1,6 +1,7 @@
 package client;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -10,7 +11,9 @@ public class Client
 	private static final String host = "localhost";
     private static final int portNumber = 4444;
 
+    //TODO implement login feature
     private String userName;
+    private String userPassword;
     private String serverHost;
     private int serverPort;
     private Scanner userInputScanner;
@@ -27,6 +30,7 @@ public class Client
             }
         }
 
+        //Creating a client from the inputed user name
         Client client = new Client(readName, host, portNumber);
         client.startClient(scan);
     }
@@ -42,9 +46,12 @@ public class Client
             Socket socket = new Socket(serverHost, serverPort);
             Thread.sleep(1000); // waiting for network communicating.
 
+            //initiating a server thread
             ServerThread serverThread = new ServerThread(socket, userName);
             Thread serverAccessThread = new Thread(serverThread);
             serverAccessThread.start();
+            
+            //While a thread with a server exist we verify if the user input anything in the console
             while(serverAccessThread.isAlive()){
                 if(scan.hasNextLine()){
                     serverThread.addNextMessage(scan.nextLine());
