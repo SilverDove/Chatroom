@@ -16,6 +16,11 @@ import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 
 public class GUI implements ActionListener {
+	//Variables
+	String username = null, firstname = null, lastname = null, password = null;
+	User newUser;
+	DatabaseSQLite db;
+	
 	
 	//Creation of frames
 	JFrame principal_frame = new JFrame("Chat GUI");
@@ -47,6 +52,8 @@ public class GUI implements ActionListener {
 	JTextArea new_lastname_textArea = new JTextArea(1, 10);
 	
 	public GUI(){
+		
+	db = DatabaseSQLite.getInstance();//get the database
 		
 	//Connection frame initialization
 	connection_frame.setMinimumSize(new Dimension(500, 100));
@@ -116,7 +123,6 @@ public class GUI implements ActionListener {
 	new_conversation.addActionListener(this);
 	
 
-
 	multiPanel.setPreferredSize(new Dimension(270, 600));
 	textPanel.setPreferredSize(new Dimension(1270, 180));
 	
@@ -159,23 +165,41 @@ public class GUI implements ActionListener {
 			message_textArea.setText(null);
 			//TODO Add the message to the database
 			break;
-		case "login":
+		case "login"://Log in the Chatroom
+			//Get information from textArea
+			username = username_textArea.getText();
+			password = password_textArea.getText();
+			
+			//Check if the user exists in the database
+			db.logIn(username,password);
+			
+			//GUI
 			connection_frame.setVisible(false);
-			//TODO Verify the data to log in
 			principal_frame.setLocationRelativeTo(null);
 			principal_frame.pack();
 			principal_frame.setVisible(true);
+			
 			break;
 			
 		case "new_account":
+			
 			new_account_frame.setLocationRelativeTo(null);
 			new_account_frame.pack();
 			new_account_frame.setVisible(true);
 			break;
 			
-		case "create":
-			//TODO Add account to database
-			//pour récupérer le contenu d'une textarea faites juste textArea.getText()
+		case "create"://Add account to database
+			//Get information from textArea
+			username = new_username_textArea.getText();
+			firstname = new_firstname_textArea.getText();
+			lastname = new_lastname_textArea.getText();
+			password = new_password_textArea.getText();
+			
+			//Save new user into the database
+			newUser = new User(username,firstname,lastname,password);//create user
+			db.CreateAccount(newUser);//add the new user into the database		
+			
+			//GUI
 			new_account_frame.setVisible(false);
 			connection_frame.setVisible(true);
 			break;

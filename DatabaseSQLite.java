@@ -148,7 +148,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 		   
 		}
 		
-		public void logIn(String username, String password) {// Check if a user can use the app
+		public boolean logIn(String username, String password) {// Check if a user can use the app
 			boolean flag=false;
 			ResultSet rs = null;
 			
@@ -169,18 +169,20 @@ public class DatabaseSQLite extends AbstractDatabase {
 				    	System.out.println("Welcome back,"+firstname+" "+lastname);
 				    	
 				    	updateTimeConnectionUser(username);
-				    	break;
+				    	return true;
 				    }
 				 }
 				
 				if (flag==false) { // we didn't find it 
 			    	 System.out.println("Username or password wrong ! Retry");
+			    	 return false;
 			     }
 				
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}finally {
-			     close();//Close the database	
+			     close();//Close the database
+			     return false;
 			}
 
 		}
