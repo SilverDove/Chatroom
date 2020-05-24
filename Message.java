@@ -1,21 +1,25 @@
 
 public class Message {
 	
-	private int idUser, idMessage;
+	private int idUser1,idUser2, idMessage;
 	private String text,timeSent;
 	
-	public Message(int idUser, int idMessage, String text, String timeSent) {
-		this.idUser = idUser;
+	public Message(int idUser1,int idUser2, int idMessage, String text, String timeSent) {
+		this.idUser1 = idUser1;
+		this.idUser2 = idUser2;
 		this.idMessage = idMessage;
 		this.text = text;
 		this.timeSent = timeSent;	
 	}
 	public String toString() { // Override the toString method		
-		System.out.println("idUser: "+this.idUser +"   idMessage: "+this.idMessage +"   Text: "+this.text +"   TimeSent: "+ this.timeSent);
+		System.out.println("idUser1: "+this.idUser1 +"idUser2: "+this.idUser2 +"   idMessage: "+this.idMessage +"   Text: "+this.text +"   TimeSent: "+ this.timeSent);
 		return null;
 	}	
-	public void setIdUser(int idUser) {
-		this.idUser = idUser;
+	public void setIdUser1(int idUser1) {
+		this.idUser1 = idUser1;
+	}
+	public void setIdUser2(int idUser2) {
+		this.idUser2 = idUser2;
 	}
 	public void setIdMessage(int idMessage) {
 		this.idMessage = idMessage;
@@ -26,8 +30,11 @@ public class Message {
 	public void setTimeSent(String timeSent) {
 		this.timeSent = timeSent ;
 	}	
-	public int getIdUser() {
-		return this.idUser;
+	public int getIdUser1() {
+		return this.idUser1;
+	}
+	public int getIdUser2() {
+		return this.idUser2;
 	}
 	public int getIdMessage() {
 		return this.idMessage;

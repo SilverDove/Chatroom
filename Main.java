@@ -24,8 +24,8 @@ public class Main {
 		User Stella = new User("Stellouch","Stella","Thammavong","1234");
 		User Nicolas = new User("Nico","Nicolas","Jatob","1234");
 		
-		/*db.CreateAccount(Clara);
-		db.CreateAccount(Antoine);
+		db.CreateAccount(Clara);
+		/*db.CreateAccount(Antoine);
 		db.CreateAccount(Karen);
 		db.CreateAccount(Stella);
 		db.CreateAccount(Nicolas);
@@ -48,12 +48,12 @@ public class Main {
 		//db.logIn("Goldby","1234");
 		
 		/*Save Message*/
-		/*db.SaveMessage("Coucou, ça va?","Kk","DuoTest");//Message not saved (WTF ?!)
+		/*db.SaveMessage("Coucou, ï¿½a va?","Kk","DuoTest");//Message not saved (WTF ?!)
 		db.SaveMessage("Ouais et toi ?","Stellouch","DuoTest");
-		db.SaveMessage("Tu as bien profité ton week-end?","Stellouch","DuoTest");*/
+		db.SaveMessage("Tu as bien profitï¿½ ton week-end?","Stellouch","DuoTest");*/
 		
 		/*Delete Message*/
-		//db.deleteMessage("Tu as bien profité ton week-end?", "Stellouch", "DuoTest");//Delete message from the conversation
+		//db.deleteMessage("Tu as bien profitï¿½ ton week-end?", "Stellouch", "DuoTest");//Delete message from the conversation
 		
 		/*List of Message*/
 		/*listMessage = db.retrieveListOfMessageFromRoom(1);
