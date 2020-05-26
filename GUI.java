@@ -75,6 +75,7 @@ public class GUI implements ActionListener, ListSelectionListener {
 	
 	public void InitializeListContacts(String username) {
 		String fullName = null;
+		int index=0;
 		
 		listUser = db.listContact();//get List of all the users
 		DefaultListModel<String> model = new DefaultListModel<>();
@@ -87,8 +88,61 @@ public class GUI implements ActionListener, ListSelectionListener {
 				System.out.println("Not "+username+" so can add");
 				fullName = listUser.get(i).getFirstname() +" "+ listUser.get(i).getLastname();
 				model.addElement(fullName);
+			}else {
+				index = i;
 			}
 		}
+		
+		listUser.remove(index);
+	
+		PrincipalFrame();//Display Chatroom
+		
+	}
+	
+	public void PrincipalFrame() {
+		//Principal frame initialization
+				principal_frame.setMinimumSize(new Dimension(1280, 800));
+				principal_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				
+				contactsList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+				contactsList.setLayoutOrientation(JList.VERTICAL);
+				contactsList.setVisibleRowCount(-1);
+				JScrollPane listScroller = new JScrollPane(contactsList);
+				listScroller.setPreferredSize(new Dimension(260, 560));
+				contactsPanel.add(listScroller);
+				contactsList.addListSelectionListener(this);
+				
+				send.setActionCommand("send");
+				send.addActionListener(this);
+				
+
+				contactsPanel.setPreferredSize(new Dimension(270, 600));
+				textPanel.setPreferredSize(new Dimension(1270, 180));
+				
+				messagesPanel.setBorder(BorderFactory.createTitledBorder("Messages"));
+				contactsPanel.setBorder(BorderFactory.createTitledBorder("Chats"));
+				textPanel.setBorder(BorderFactory.createTitledBorder("Write here"));
+				
+				messagesPanel.setLayout(new BoxLayout(messagesPanel,BoxLayout.Y_AXIS));
+				
+				JScrollPane scrollPane = new JScrollPane(message_textArea);
+				JScrollPane chat_scrollPane = new JScrollPane(messagesPanel);
+				chat_scrollPane.setPreferredSize(new Dimension(1000, 600));
+				scrollPane.setVerticalScrollBarPolicy ( ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS );
+				chat_scrollPane.setVerticalScrollBarPolicy ( ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS );
+				chat_scrollPane.setHorizontalScrollBarPolicy ( ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
+				textPanel.add(scrollPane);
+				message_textArea.setEditable(true);
+				
+				textPanel.add(scrollPane, BorderLayout.WEST);
+				textPanel.add(send, BorderLayout.EAST);
+				principal_frame.add(chat_scrollPane, BorderLayout.WEST);
+				principal_frame.add(contactsPanel, BorderLayout.EAST);
+				principal_frame.add(textPanel, BorderLayout.SOUTH);
+				
+				connection_frame.setLocationRelativeTo(null);
+				connection_frame.pack();
+				connection_frame.setVisible(true);
 		
 	}
 	
@@ -150,46 +204,6 @@ public class GUI implements ActionListener, ListSelectionListener {
 		accountPanel.add(new_password_textArea, BorderLayout.NORTH);
 		accountPanel.add(create_account, BorderLayout.SOUTH);
 		
-		
-		//Principal frame initialization
-		principal_frame.setMinimumSize(new Dimension(1280, 800));
-		principal_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		contactsList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		contactsList.setLayoutOrientation(JList.VERTICAL);
-		contactsList.setVisibleRowCount(-1);
-		JScrollPane listScroller = new JScrollPane(contactsList);
-		listScroller.setPreferredSize(new Dimension(260, 560));
-		contactsPanel.add(listScroller);
-		contactsList.addListSelectionListener(this);
-		
-		send.setActionCommand("send");
-		send.addActionListener(this);
-		
-
-		contactsPanel.setPreferredSize(new Dimension(270, 600));
-		textPanel.setPreferredSize(new Dimension(1270, 180));
-		
-		messagesPanel.setBorder(BorderFactory.createTitledBorder("Messages"));
-		contactsPanel.setBorder(BorderFactory.createTitledBorder("Chats"));
-		textPanel.setBorder(BorderFactory.createTitledBorder("Write here"));
-		
-		messagesPanel.setLayout(new BoxLayout(messagesPanel,BoxLayout.Y_AXIS));
-		
-		JScrollPane scrollPane = new JScrollPane(message_textArea);
-		JScrollPane chat_scrollPane = new JScrollPane(messagesPanel);
-		chat_scrollPane.setPreferredSize(new Dimension(1000, 600));
-		scrollPane.setVerticalScrollBarPolicy ( ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS );
-		chat_scrollPane.setVerticalScrollBarPolicy ( ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS );
-		chat_scrollPane.setHorizontalScrollBarPolicy ( ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
-		textPanel.add(scrollPane);
-		message_textArea.setEditable(true);
-		
-		textPanel.add(scrollPane, BorderLayout.WEST);
-		textPanel.add(send, BorderLayout.EAST);
-		principal_frame.add(chat_scrollPane, BorderLayout.WEST);
-		principal_frame.add(contactsPanel, BorderLayout.EAST);
-		principal_frame.add(textPanel, BorderLayout.SOUTH);
 		connection_frame.setLocationRelativeTo(null);
 		connection_frame.pack();
 		connection_frame.setVisible(true);
@@ -279,16 +293,44 @@ public class GUI implements ActionListener, ListSelectionListener {
 		    	/*Display the records of the chat with the selected contact*/
 		    	ArrayList<Message> messageConversation = db.retrieveListOfMessageFromDiscussion(contactUser.getUsername(), currentUser.getUsername());//Retrieve all the messages
 		    	
-		    	JLabel displayMessage = new JLabel();
+		    	JLabel displayMessage;
 		    	Message m;
-		    	for (int i=0 ;i<messageConversation.size(); i++) {
-		    		m = messageConversation.get(i);
-		    		if(m.getIdUser1() == db.getIDFromUsername(contactUser.getUsername())) {//If the contact send the message
-		    			displayMessage.setText(contactUser.getFirstname()+" "+contactUser.getLastname()+"\n"+m.getTimesent()+"\n\n"+m.getText());
-		    		}else {//if the current user send the message
-		    			displayMessage.setText(currentUser.getFirstname()+" "+currentUser.getLastname()+"\n"+m.getTimesent()+"\n\n"+m.getText());
-		    		}
+		    	
+		    	if (messageConversation.size()!=0) {
+		    		for (int i=0 ;i<messageConversation.size(); i++) {
+			    		m = messageConversation.get(i);
+			    		if(m.getIdUser1() == db.getIDFromUsername(contactUser.getUsername())) {//If the contact send the message
+			    			displayMessage = new JLabel(contactUser.getFirstname()+" "+contactUser.getLastname());
+			    			messagesPanel.add(displayMessage);
+			    			displayMessage = new JLabel(m.getTimesent());
+			    			messagesPanel.add(displayMessage);
+			    			displayMessage = new JLabel(m.getText());
+			    			messagesPanel.add(displayMessage);
+			    			displayMessage = new JLabel(" ");
+			    			messagesPanel.add(displayMessage);
+			    			messagesPanel.add(displayMessage);
+
+			    			
+			    		}else {//if the current user send the message
+			    			displayMessage = new JLabel(currentUser.getFirstname()+" "+currentUser.getLastname());
+			    			messagesPanel.add(displayMessage);
+			    			displayMessage = new JLabel(m.getTimesent());
+			    			messagesPanel.add(displayMessage);
+			    			displayMessage = new JLabel(m.getText());
+			    			messagesPanel.add(displayMessage);
+			    			displayMessage = new JLabel(" ");
+			    			messagesPanel.add(displayMessage);
+			    			messagesPanel.add(displayMessage);
+			    		}
+			    		messagesPanel.add(displayMessage);
+			    		messagesPanel.updateUI();
+			    	}
+		    	}else {
+		    		messagesPanel.removeAll();
+		    		messagesPanel.updateUI();
 		    	}
+		    	
+		    	
 		    
 		    	//to get the name of the selected contact just use contactsList.getSelectedValue()
 		    	//the following code is just shown as an example of how this works
