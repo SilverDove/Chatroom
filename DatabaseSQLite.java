@@ -10,12 +10,8 @@ public class DatabaseSQLite extends AbstractDatabase {
 	
 	//JDBC driver name and database URL
 		private static final String JDBC_DRIVER = "org.h2.Driver";
-		private static final String DB_URL = "jdbc:h2:C:/Users/antoi/Documents/GitHub/Chatroom/test;AUTO_SERVER=TRUE" + 
-				" MESSAGE";
+		private static final String DB_URL = "jdbc:sqlite:test.db";
 		
-	//Database credentials
-		private static final String USER = "sa";
-		private static final String PASS = "";
 		
 	//Variables	
 		private String sql;
@@ -44,7 +40,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 				Class.forName(JDBC_DRIVER);
 				//Open a connection
 				System.out.println("Connecting to database...");
-				con=DriverManager.getConnection(DB_URL, USER, PASS);
+				con=DriverManager.getConnection(DB_URL);
 				System.out.println("*** Connection succeed ***");
 				
 	        } catch (ClassNotFoundException notFoundException) {
@@ -95,7 +91,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 			System.out.println("Creating tables in given database ...");
 			
 			sql = "CREATE TABLE IF NOT EXISTS user"
-			        + "	(idUser INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,"
+			        + "	(idUser INTEGER PRIMARY KEY AUTOINCREMENT,"
 			        + "	username VARCHAR(20) NOT NULL  , "
 			        + "	firstname VARCHAR(20) NOT NULL, "
 			        + "	lastname varchar(20) NOT NULL, "
@@ -105,7 +101,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 			ExecuteQuery(sql);	//execute the query     
 			 
 			sql = "CREATE TABLE IF NOT EXISTS message"
-			        + "	(idMessage INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,"
+			        + "	(idMessage INTEGER PRIMARY KEY AUTOINCREMENT,"
 			        + "	idUser1 INTEGER , "
 			        + " idUser2 INTEGER , "
 			        + " timeSent varchar(20) NOT NULL , "
@@ -176,7 +172,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 		
 		public void updateTimeConnectionUser(String username) {//Update the connection time of the user
 			//Query to change the date
-		    sql = "UPDATE user set lastConnection = FORMATDATETIME(CURRENT_TIMESTAMP(), 'yyyy-MM-dd hh:mm:ss') where username = '"+username+"'  ;";
+		    sql = "UPDATE user set lastConnection = datetime('now') where username = '"+username+"'  ;";
 		    ExecuteQuery(sql);	//execute the query
 		        
 		}
@@ -187,12 +183,12 @@ public class DatabaseSQLite extends AbstractDatabase {
 			connect();//Open the database
 			
 	        try {
-	        	rs=ResultQuery("select idUser from User where username ="+userSender+";");	        
+	        	rs=ResultQuery("select idUser from user where username ='"+userSender+"';");	        
 	        	while (rs.next()) {
 	        		idUser1 = rs.getInt("idUser");
 	        	}
 			
-	        	rs=ResultQuery("select idUser from User where username ="+userReceiver+";");
+	        	rs=ResultQuery("select idUser from user where username ='"+userReceiver+"';");
 	        	while (rs.next()) {
 	        		idUser2 = rs.getInt("idUser");
 	        	}
@@ -200,7 +196,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-		    ExecuteQuery("insert into message (idUser1,idUser2,timeSent,message) values ('"+idUser1+"', '"+idUser2+"', FORMATDATETIME(CURRENT_TIMESTAMP(), 'yyyy-MM-dd hh:mm:ss'), '"+userSender+" :"+messageSend+"');");
+		    ExecuteQuery("insert into message (idUser1,idUser2,timeSent,message) values ('"+idUser1+"', '"+idUser2+"', datetime('now'), '"+userSender+" :"+messageSend+"');");
 			System.out.println("Message save in the table Message");
 					
 			updateTimeConnectionUser(userSender);
@@ -213,7 +209,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 		}
 			
 		
-		public ArrayList<Message> retrieveListOfMessageFromDiscussion(int username1, int username2){
+		public ArrayList<Message> retrieveListOfMessageFromDiscussion(String username1,String username2){
 			ArrayList<Message> listMessages = new ArrayList<Message>();
 			ResultSet rs = null;
 			Message message;
@@ -224,24 +220,24 @@ public class DatabaseSQLite extends AbstractDatabase {
 
 	        try {
 	        	
-				rs=ResultQuery("select idUser from User where username ="+username1+";");	        
+				rs=ResultQuery("select idUser from user where username = '"+username1+"';");	        
 				while (rs.next()) {
 				    idUser1 = rs.getInt("idUser");
 				}
 				
-				rs=ResultQuery("select idUser from User where username ="+username2+";");
+				rs=ResultQuery("select idUser from user where username = '"+username2+"';");
 				while (rs.next()) {
 				    idUser2 = rs.getInt("idUser");
 				}
 				
-				rs=ResultQuery("select idUser1, idUser2, idMessage, text, timeSent from Message where (idUser1 ="+idUser1+" AND idUser2 ="+idUser2+") OR (idUser1 ="+idUser2+" AND idUser2 ="+idUser1+");");
+				rs=ResultQuery("select idUser1, idUser2, idMessage, message, timeSent from message where (idUser1 ="+idUser1+" AND idUser2 ="+idUser2+") OR (idUser1 ="+idUser2+" AND idUser2 ="+idUser1+");");
 				
 				while (rs.next()) {
 				    idUser1 = rs.getInt("idUser1");
 				    idUser2 = rs.getInt("idUser2");
 				    idMessage = rs.getInt("idMessage");
 				    text = rs.getString("idMessage");
-				    timeSent = rs.getString("idtimeSent");
+				    timeSent = rs.getString("timeSent");
 				    message = new Message(idUser1,idUser2,idMessage,text,timeSent);
 				    listMessages.add(message);
 				}
