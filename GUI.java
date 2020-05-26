@@ -4,9 +4,11 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -16,12 +18,24 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 
-public class GUI implements ActionListener {
-	//Variables
-	String username = null, firstname = null, lastname = null, password = null;
-	User newUser;
+import javax.swing.JList;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListSelectionEvent;
+
+
+public class GUI implements ActionListener, ListSelectionListener {
+	/* --- Variables --- */
+	User currentUser = null;//User currently using the software
+	User contactUser = null;//User with whom currentUser is talking to
+	ArrayList<User> listUser;//List of all User in the database
+	
 	DatabaseSQLite db;
-	boolean flag;	
+	
+	//String[] data = {"Bob", "Alice", "Jean", "Patrick"}; //Contacts list for example
+	//JList<String> contactsList = new JList<String>(data);
+	
+	JList<String> contactsList = new JList<String>();//List of contact 
 	
 	//Creation of frames
 	JFrame principal_frame = new JFrame("Chat GUI");
@@ -33,12 +47,11 @@ public class GUI implements ActionListener {
 	JPanel accountPanel = new JPanel();
 	JPanel loginPanel = new JPanel();
 	JPanel messagesPanel = new JPanel();
-	JPanel multiPanel = new JPanel();
+	JPanel contactsPanel = new JPanel();
 	JPanel textPanel = new JPanel();
 
 	//Creation of buttons
 	JButton send = new JButton("SEND");
-	JButton new_conversation = new JButton("+");
 	JButton log_in = new JButton("Log in");
 	JButton new_account = new JButton("Create account");
 	JButton create_account = new JButton("OK");
@@ -55,110 +68,140 @@ public class GUI implements ActionListener {
 	
 	public GUI(){
 		
-	db = DatabaseSQLite.getInstance();//get the instance of the database
+		db = DatabaseSQLite.getInstance();//get the instance of the database
 		
-	//Connection frame initialization
-	connection_frame.setMinimumSize(new Dimension(500, 100));
-	connection_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		ConnectionFrame();//Initialization of all the frames
+	}
 	
-	loginPanel.setPreferredSize(new Dimension(490, 90));
-	loginPanel.setBorder(BorderFactory.createTitledBorder("Welcome to our chat! :)"));
+	public void InitializeListContacts(String username) {
+		String fullName = null;
+		
+		listUser = db.listContact();//get List of all the users
+		DefaultListModel<String> model = new DefaultListModel<>();
+		contactsList = new JList<>(model);
+		
+		System.out.println("InitializeListContacts()");
+		System.out.println("Size of the list is "+listUser.size());
+		for (int i=0; i<listUser.size(); i++) {//Add name and last name of each User in the contactsList
+			if(username.equals(listUser.get(i).getUsername()) == false) {//If we don't find current in the list, we add in the list
+				System.out.println("Not "+username+" so can add");
+				fullName = listUser.get(i).getFirstname() +" "+ listUser.get(i).getLastname();
+				model.addElement(fullName);
+			}
+		}
+		
+	}
 	
-	JLabel enter_username1 = new JLabel("Username:");
-	JLabel enter_password1 = new JLabel("Password:");
-	
-	connection_frame.add(loginPanel);
-	loginPanel.add(enter_username1);
-	loginPanel.add(username_textArea);
-	loginPanel.add(enter_password1);
-	loginPanel.add(password_textArea);
-	loginPanel.add(log_in);
-	loginPanel.add(new_account);
-	
-	username_textArea.setEditable(true);
-	password_textArea.setEditable(true);
-	log_in.setActionCommand("login");
-	log_in.addActionListener(this);
-	new_account.setActionCommand("new_account");
-	new_account.addActionListener(this);
+	public void ConnectionFrame() {
+		
+		//Connection frame initialization
+		connection_frame.setMinimumSize(new Dimension(500, 100));
+		connection_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		loginPanel.setPreferredSize(new Dimension(490, 90));
+		loginPanel.setBorder(BorderFactory.createTitledBorder("Welcome to our chat! :)"));
+		
+		JLabel enter_username1 = new JLabel("Username:");
+		JLabel enter_password1 = new JLabel("Password:");
+		
+		connection_frame.add(loginPanel);
+		loginPanel.add(enter_username1);
+		loginPanel.add(username_textArea);
+		loginPanel.add(enter_password1);
+		loginPanel.add(password_textArea);
+		loginPanel.add(log_in);
+		loginPanel.add(new_account);
+		
+		username_textArea.setEditable(true);
+		password_textArea.setEditable(true);
+		log_in.setActionCommand("login");
+		log_in.addActionListener(this);
+		new_account.setActionCommand("new_account");
+		new_account.addActionListener(this);
 
-	//New account frame initialization	
-	new_account_frame.setMinimumSize(new Dimension(200, 150));
-	new_account_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	accountPanel.setPreferredSize(new Dimension(190, 140));
-	accountPanel.setBorder(BorderFactory.createTitledBorder("Enter your information"));
-	//accountPanel.setLayout(new GridLayout(5,2, 1, 1));
-	
-	new_username_textArea.setEditable(true);
-	new_password_textArea.setEditable(true);
-	new_firstname_textArea.setEditable(true);
-	new_lastname_textArea.setEditable(true);
-	JLabel enter_username2 = new JLabel("Username:");
-	JLabel enter_password2 = new JLabel("Password:");
-	JLabel enter_firstname = new JLabel("Firstname:");
-	JLabel enter_lastname = new JLabel("Lastname:");
-	
-	create_account.setActionCommand("create");
-	create_account.addActionListener(this);
-	
+		//New account frame initialization	
+		new_account_frame.setMinimumSize(new Dimension(200, 150));
+		new_account_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		accountPanel.setPreferredSize(new Dimension(190, 140));
+		accountPanel.setBorder(BorderFactory.createTitledBorder("Enter your information"));
+		//accountPanel.setLayout(new GridLayout(5,2, 1, 1));
+		
+		new_username_textArea.setEditable(true);
+		new_password_textArea.setEditable(true);
+		new_firstname_textArea.setEditable(true);
+		new_lastname_textArea.setEditable(true);
+		JLabel enter_username2 = new JLabel("Username:");
+		JLabel enter_password2 = new JLabel("Password:");
+		JLabel enter_firstname = new JLabel("Firstname:");
+		JLabel enter_lastname = new JLabel("Lastname:");
+		
+		create_account.setActionCommand("create");
+		create_account.addActionListener(this);
+		
 
-	new_account_frame.add(accountPanel);
-	accountPanel.add(enter_username2, BorderLayout.NORTH);
-	accountPanel.add(new_username_textArea, BorderLayout.NORTH);
-	accountPanel.add(enter_firstname, BorderLayout.NORTH);
-	accountPanel.add(new_firstname_textArea, BorderLayout.NORTH);
-	accountPanel.add(enter_lastname, BorderLayout.NORTH);
-	accountPanel.add(new_lastname_textArea, BorderLayout.NORTH);
-	accountPanel.add(enter_password2, BorderLayout.NORTH);
-	accountPanel.add(new_password_textArea, BorderLayout.NORTH);
-	accountPanel.add(create_account, BorderLayout.SOUTH);
-	
-	
-	//Principal frame initialization
-	principal_frame.setMinimumSize(new Dimension(1280, 800));
-	principal_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	
-	
-	send.setActionCommand("send");
-	send.addActionListener(this);
-	new_conversation.setActionCommand("new");
-	new_conversation.addActionListener(this);
-	
+		new_account_frame.add(accountPanel);
+		accountPanel.add(enter_username2, BorderLayout.NORTH);
+		accountPanel.add(new_username_textArea, BorderLayout.NORTH);
+		accountPanel.add(enter_firstname, BorderLayout.NORTH);
+		accountPanel.add(new_firstname_textArea, BorderLayout.NORTH);
+		accountPanel.add(enter_lastname, BorderLayout.NORTH);
+		accountPanel.add(new_lastname_textArea, BorderLayout.NORTH);
+		accountPanel.add(enter_password2, BorderLayout.NORTH);
+		accountPanel.add(new_password_textArea, BorderLayout.NORTH);
+		accountPanel.add(create_account, BorderLayout.SOUTH);
+		
+		
+		//Principal frame initialization
+		principal_frame.setMinimumSize(new Dimension(1280, 800));
+		principal_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		contactsList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		contactsList.setLayoutOrientation(JList.VERTICAL);
+		contactsList.setVisibleRowCount(-1);
+		JScrollPane listScroller = new JScrollPane(contactsList);
+		listScroller.setPreferredSize(new Dimension(260, 560));
+		contactsPanel.add(listScroller);
+		contactsList.addListSelectionListener(this);
+		
+		send.setActionCommand("send");
+		send.addActionListener(this);
+		
 
-	multiPanel.setPreferredSize(new Dimension(270, 600));
-	textPanel.setPreferredSize(new Dimension(1270, 180));
-	
-	messagesPanel.setBorder(BorderFactory.createTitledBorder("Messages"));
-	multiPanel.setBorder(BorderFactory.createTitledBorder("Chats"));
-	textPanel.setBorder(BorderFactory.createTitledBorder("Write here"));
-	
-	messagesPanel.setLayout(new BoxLayout(messagesPanel,BoxLayout.Y_AXIS));
-	
-	JScrollPane scrollPane = new JScrollPane(message_textArea);
-	JScrollPane chat_scrollPane = new JScrollPane(messagesPanel);
-	chat_scrollPane.setPreferredSize(new Dimension(1000, 600));
-	scrollPane.setVerticalScrollBarPolicy ( ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS );
-	chat_scrollPane.setVerticalScrollBarPolicy ( ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS );
-	chat_scrollPane.setHorizontalScrollBarPolicy ( ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
-	textPanel.add(scrollPane);
-	message_textArea.setEditable(true);
-	
-	textPanel.add(scrollPane, BorderLayout.WEST);
-	textPanel.add(send, BorderLayout.EAST);
-	textPanel.add(new_conversation, BorderLayout.EAST);
-	principal_frame.add(chat_scrollPane, BorderLayout.WEST);
-	principal_frame.add(multiPanel, BorderLayout.EAST);
-	principal_frame.add(textPanel, BorderLayout.SOUTH);
-	connection_frame.setLocationRelativeTo(null);
-	connection_frame.pack();
-	connection_frame.setVisible(true);
+		contactsPanel.setPreferredSize(new Dimension(270, 600));
+		textPanel.setPreferredSize(new Dimension(1270, 180));
+		
+		messagesPanel.setBorder(BorderFactory.createTitledBorder("Messages"));
+		contactsPanel.setBorder(BorderFactory.createTitledBorder("Chats"));
+		textPanel.setBorder(BorderFactory.createTitledBorder("Write here"));
+		
+		messagesPanel.setLayout(new BoxLayout(messagesPanel,BoxLayout.Y_AXIS));
+		
+		JScrollPane scrollPane = new JScrollPane(message_textArea);
+		JScrollPane chat_scrollPane = new JScrollPane(messagesPanel);
+		chat_scrollPane.setPreferredSize(new Dimension(1000, 600));
+		scrollPane.setVerticalScrollBarPolicy ( ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS );
+		chat_scrollPane.setVerticalScrollBarPolicy ( ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS );
+		chat_scrollPane.setHorizontalScrollBarPolicy ( ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
+		textPanel.add(scrollPane);
+		message_textArea.setEditable(true);
+		
+		textPanel.add(scrollPane, BorderLayout.WEST);
+		textPanel.add(send, BorderLayout.EAST);
+		principal_frame.add(chat_scrollPane, BorderLayout.WEST);
+		principal_frame.add(contactsPanel, BorderLayout.EAST);
+		principal_frame.add(textPanel, BorderLayout.SOUTH);
+		connection_frame.setLocationRelativeTo(null);
+		connection_frame.pack();
+		connection_frame.setVisible(true);
+		
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		String username = null, firstname = null, lastname = null, password = null;
+		User newUser = null;//User to add in the database (create new account)
+		boolean flag =false;
+		
 		switch(e.getActionCommand()) {
-		case "new":
-			multiPanel.setBorder(BorderFactory.createTitledBorder("Contacts"));
-			break;
 		case "send"://Send a message in the chat
 			String message = message_textArea.getText();
 			JLabel new_message = new JLabel(message);
@@ -180,6 +223,8 @@ public class GUI implements ActionListener {
 			if(flag == false) {//Wrong password/usernage
 				JOptionPane.showMessageDialog(error_frame, "Your password/username is incorrect. Please try again", "Error", JOptionPane.ERROR_MESSAGE);
 			}else {//Correct information about the user
+				currentUser = db.getUser(username);//get information about the current user 
+				InitializeListContacts(username);//Initialize list of contacts
 				//Display the chatroom
 				connection_frame.setVisible(false);
 				principal_frame.setLocationRelativeTo(null);
@@ -223,6 +268,36 @@ public class GUI implements ActionListener {
 			break;
 		}
 	}
+	
+	//If the user clicks on a contact in the list
+		public void valueChanged(ListSelectionEvent e) {
+		    if (e.getValueIsAdjusting() == false) { //if the user is not manipulating the selection anymore
+		    	/*Get information about the user when click on a specific contact*/
+		    	int index = (Integer) contactsList.getSelectedIndex();//Get the index where the user clicked
+		    	contactUser = listUser.get(index);//Save current contact User
+		    	
+		    	/*Display the records of the chat with the selected contact*/
+		    	ArrayList<Message> messageConversation = db.retrieveListOfMessageFromDiscussion(contactUser.getUsername(), currentUser.getUsername());//Retrieve all the messages
+		    	
+		    	JLabel displayMessage = new JLabel();
+		    	Message m;
+		    	for (int i=0 ;i<messageConversation.size(); i++) {
+		    		m = messageConversation.get(i);
+		    		if(m.getIdUser1() == db.getIDFromUsername(contactUser.getUsername())) {//If the contact send the message
+		    			displayMessage.setText(contactUser.getFirstname()+" "+contactUser.getLastname()+"\n"+m.getTimesent()+"\n\n"+m.getText());
+		    		}else {//if the current user send the message
+		    			displayMessage.setText(currentUser.getFirstname()+" "+currentUser.getLastname()+"\n"+m.getTimesent()+"\n\n"+m.getText());
+		    		}
+		    	}
+		    
+		    	//to get the name of the selected contact just use contactsList.getSelectedValue()
+		    	//the following code is just shown as an example of how this works
+		    	/*JLabel coucou = new JLabel(contactsList.getSelectedValue());
+		    	messagesPanel.add(coucou);
+		    	messagesPanel.updateUI();*/
+		    }
+		}
+
 	
 	public static void main(String[] args) {
 		new GUI();

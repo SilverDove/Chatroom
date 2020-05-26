@@ -164,8 +164,9 @@ public class DatabaseSQLite extends AbstractDatabase {
 				e.printStackTrace();
 			}finally {
 			     close();//Close the database
-			     return false;
 			}
+		    
+		    return false;
 
 		}
 		
@@ -303,6 +304,58 @@ public class DatabaseSQLite extends AbstractDatabase {
 				}
 				
 				return contactList;
+		}
+		
+		public User getUser(String username) {//returns the information of a specific user
+			//Variables
+			ResultSet rs = null;	
+			String userName = null, firstName = null, lastName = null, password= null;
+			User user = null;
+			
+			connect();//Open the database
+				
+		        //Query to get the contact list 
+		        rs=ResultQuery("select * from user where username = '"+username+"';");
+		        try {
+					while (rs.next()) {
+						userName = rs.getString("username");
+						firstName = rs.getString("firstname");
+						lastName = rs.getString("lastname");
+						password = rs.getString("password");
+						
+						user = new User(userName, firstName, lastName, password);
+						
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}finally {
+				     close();//close the database	
+				}
+				
+				return user;
+		}
+		
+		public int getIDFromUsername(String username) {
+			//Variables
+			ResultSet rs = null;	
+			int id=0;
+			
+			connect();//Open the database
+				
+		        //Query to get the contact list 
+		        rs=ResultQuery("select idUser from user where username = '"+username+"';");
+		        try {
+					while (rs.next()) {
+						id = rs.getInt("idUser");
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}finally {
+				     close();//close the database	
+				}
+				
+			return id;
+			
 		}
 		
 }

@@ -17,7 +17,7 @@ public class Main {
 		/*Creation of the database*/
 		//db.createNewDatabase(); // Connections with the database and creation of tables if database is new		
 		
-		db.createNewDatabase();
+		//db.createNewDatabase();
 		/*List of contacts*/
 		User Clara = new User("Clacla","Clara","Tricot","1234");
 		User Antoine = new User("Goldby","Antoine","Mairet","1234");
@@ -36,10 +36,10 @@ public class Main {
 			System.out.println("Surname: "+listUsers.get(i).getUsername()+" FirstName: "+listUsers.get(i).getFirstname()+" LastName: "+listUsers.get(i).getLastname()+" Password: "+listUsers.get(i).getPassword());
 		}*/
 		
-		db.SaveMessage("CC","Goldby","Clacla");
+		/*db.SaveMessage("CC","Goldby","Clacla");
 		db.SaveMessage("cc","Clacla","Goldby");
 		db.SaveMessage("Ca va ?","Goldby","Clacla");
-		db.SaveMessage("Oui et toi ?","Clacla","Goldby");
+		db.SaveMessage("Oui et toi ?","Clacla","Goldby");*/
 		/*LogIn*/	
 		//db.logIn("Goldby","1234");
 		
