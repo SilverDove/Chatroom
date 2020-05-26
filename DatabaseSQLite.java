@@ -3,28 +3,25 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import org.h2.jdbc.JdbcSQLSyntaxErrorException;
-
 public class DatabaseSQLite extends AbstractDatabase {
 	
 	//JDBC driver name and database URL
-		private static final String JDBC_DRIVER = "org.h2.Driver";
-		private static final String DB_URL = "jdbc:h2:tcp://localhost/~/test";
+		private static final String JDBC_DRIVER = "org.sqlite.JDBC";
+		private static final String DB_URL = "jdbc:sqlite:test.db";
 		
-	//Database credentials
-		private static final String USER = "sa";
-		private static final String PASS = "";
 		
 	//Variables	
 		private String sql;
 		private Connection con = null;
 		private Statement st = null;
 		private SimpleDateFormat format = new SimpleDateFormat("yyyy-mm-dd hh:mm"); 
+
 		
 	//Singleton Pattern
 		private static DatabaseSQLite uniqueInstance = new DatabaseSQLite();
 		
 		public DatabaseSQLite() {
+
 			con = null;
 			st = null;
 		}
@@ -40,7 +37,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 				Class.forName(JDBC_DRIVER);
 				//Open a connection
 				System.out.println("Connecting to database...");
-				con=DriverManager.getConnection(DB_URL, USER, PASS);
+				con=DriverManager.getConnection(DB_URL);
 				System.out.println("*** Connection succeed ***");
 				
 	        } catch (ClassNotFoundException notFoundException) {
@@ -91,7 +88,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 			System.out.println("Creating tables in given database ...");
 			
 			sql = "CREATE TABLE IF NOT EXISTS user"
-			        + "	(idUser INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,"
+			        + "	(idUser INTEGER PRIMARY KEY AUTOINCREMENT,"
 			        + "	username VARCHAR(20) NOT NULL  , "
 			        + "	firstname VARCHAR(20) NOT NULL, "
 			        + "	lastname varchar(20) NOT NULL, "
@@ -99,31 +96,16 @@ public class DatabaseSQLite extends AbstractDatabase {
 			        + "	lastConnection varchar(20),"
 			        + " CONSTRAINT unique_username UNIQUE(username));";                
 			ExecuteQuery(sql);	//execute the query     
-			
-			sql = "CREATE TABLE IF NOT EXISTS room"
-			        + "	(idRoom integer PRIMARY KEY AUTO_INCREMENT NOT NULL,"
-			        + "	name varchar(20) NOT NULL, "
-			        + "	creationDate varchar(20),"
-			        + " CONSTRAINT unique_room UNIQUE(name)); ";             
-			ExecuteQuery(sql);	//execute the query     
-			
-			sql = "CREATE TABLE IF NOT EXISTS participants"
-			        + "	(idRoom INTEGER ,"
-			        + "	idUser INTEGER , "
-			        + "	FOREIGN KEY(idUser) REFERENCES user(idUser), "
-			        + "	FOREIGN KEY(idRoom) REFERENCES room(idRoom),"
-			        + " CONSTRAINT unique_user_room UNIQUE(idRoom, idUser)); ";
-			ExecuteQuery(sql);	//execute the query     
-			
+			 
 			sql = "CREATE TABLE IF NOT EXISTS message"
-			        + "	(idMessage INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,"
-			        + "	idUser INTEGER , "
-			        + " idRoom INTEGER , "
+			        + "	(idMessage INTEGER PRIMARY KEY AUTOINCREMENT,"
+			        + "	idUser1 INTEGER , "
+			        + " idUser2 INTEGER , "
 			        + " timeSent varchar(20) NOT NULL , "
 			        + " message text NOT NULL, "
-			        + "	FOREIGN KEY(idUser) REFERENCES user(idUser), "
-			        + "	FOREIGN KEY(idRoom) REFERENCES room(idRoom),"
-			        + " CONSTRAINT unique_message UNIQUE(idMessage, idUser, idRoom)); "; 
+			        + "	FOREIGN KEY(idUser1) REFERENCES user(idUser), "
+			        + "	FOREIGN KEY(idUser2) REFERENCES user(idUser), "
+			        + " CONSTRAINT unique_message UNIQUE(idMessage, idUser1, idUser2)); "; 
 			ExecuteQuery(sql);	//execute the query     
 
 
@@ -189,122 +171,80 @@ public class DatabaseSQLite extends AbstractDatabase {
 		
 		public void updateTimeConnectionUser(String username) {//Update the connection time of the user
 			//Query to change the date
-		    sql = "UPDATE user set lastConnection = FORMATDATETIME(CURRENT_TIMESTAMP(), 'yyyy-MM-dd hh:mm:ss') where username = '"+username+"'  ;";
+		    sql = "UPDATE user set lastConnection = datetime('now') where username = '"+username+"'  ;";
 		    ExecuteQuery(sql);	//execute the query
 		        
 		}
 		
-		public void SaveMessage(String messageSend, String username, String roomName) {//Save messages send and receive 
-			ResultSet rs = null;	
-			
+		public void SaveMessage(String messageSend, String userSender, String userReceiver)  {//Save messages send and receive 
+			ResultSet rs = null;
+			int idUser1 = 0,idUser2 = 0;
 			connect();//Open the database
-				
-		        //Query to save a message into the database
-		        rs=ResultQuery("select idUser, idRoom from participants where idUser is (select idUser from user where username = '"+username+"') and idRoom is (select idRoom from room where name = '"+roomName+"');");
-		        int idUser, idRoom;
-		        try {
-					while (rs.next()) {
-						idUser = rs.getInt("idUser");
-						idRoom = rs.getInt("idRoom");
-						
-						ExecuteQuery("insert into message (idUser,idRoom,timeSent,message) values ('"+idUser+"', '"+idRoom+"', FORMATDATETIME(CURRENT_TIMESTAMP(), 'yyyy-MM-dd hh:mm:ss'), '"+messageSend+"');");
-						System.out.println("Get query of Save Message 2");
-					}
+			
+	        try {
+	        	rs=ResultQuery("select idUser from user where username ='"+userSender+"';");	        
+	        	while (rs.next()) {
+	        		idUser1 = rs.getInt("idUser");
+	        	}
+			
+	        	rs=ResultQuery("select idUser from user where username ='"+userReceiver+"';");
+	        	while (rs.next()) {
+	        		idUser2 = rs.getInt("idUser");
+	        	}
+	        	
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		    ExecuteQuery("insert into message (idUser1,idUser2,timeSent,message) values ('"+idUser1+"', '"+idUser2+"', datetime('now'), '"+userSender+" :"+messageSend+"');");
+			System.out.println("Message save in the table Message");
 					
-					System.out.println("Message save");
+			updateTimeConnectionUser(userSender);
+			System.out.println("Get time update!");
 					
-					updateTimeConnectionUser(username);
-					System.out.println("Get time update!");
-					
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}finally {
-				      //Close the database
-						close();//Close the database
-				}
+			//Close the database
+			close();//Close the database
+
 
 		}
 			
-		public void creationRoomXUsers(String nameRoom,ArrayList<User> listUsers) {
-			StringBuilder sb = new StringBuilder();
-			ResultSet rs = null;
-		    Date aujourdhui = new Date();
-		    String date = format.format(aujourdhui);
-			connect();//Open the database
-				
-			if (nameRoom == null) { // Change the name of the conversation by a default one
-				for(User user : listUsers) {	
-					sb.append(user.getUsername()+", ");
-				}
-				sb.delete(sb.length()-2, sb.length());
-				nameRoom = sb.toString();
-			}
-				
-			sql = " INSERT INTO Room ( name, creationDate) "   // Creation of the room
-			       + " VALUES ('"+nameRoom+"','"+date+"'); ";
-			ExecuteQuery(sql);//execute the query
-			    	
-			rs=ResultQuery("SELECT MAX(idRoom) as idRoom FROM room;"); // Fetch the id of the room created before
-			int idRoom=-1;
-			int idUser = -1;
-			try {
-				while (rs.next()) {
-					idRoom = rs.getInt("idRoom");
-				}
-				for  (User user : listUsers) {
-					// Fetch the userId of the user1
-				   rs=ResultQuery("SELECT idUser FROM user where username = '"+user.getUsername()+"';"); 
-				   while (rs.next()) {
-					   idUser = rs.getInt("idUser");
-				   }
-				   		    			    
-				   // Fill the table participants to link user with room
-				    sql = " INSERT INTO Participants ( idUser, idRoom) "  
-						+ " VALUES ('"+idUser+"','"+idRoom+"'); ";
-				    ExecuteQuery(sql);
-				    
-				 }
-				
-				System.out.println("Group for chat created with sucess");
-				
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}finally {
-				close();//close the database	
-			}
 		
-		}		
-		
-		public ArrayList<Message> retrieveListOfMessageFromRoom(int idRoom){
+		public ArrayList<Message> retrieveListOfMessageFromDiscussion(String username1,String username2){
 			ArrayList<Message> listMessages = new ArrayList<Message>();
 			ResultSet rs = null;
 			Message message;
-			int idUser,idMessage;
+			int idUser1=0,idUser2 = 0,idMessage=0;
 			String text, timeSent;
 			connect();//Open the database
 			
-			rs=ResultQuery("select idMessage, idUser,timeSent,message from Message where idRoom ="+idRoom+";");
+
 	        try {
+	        	
+				rs=ResultQuery("select idUser from user where username = '"+username1+"';");	        
 				while (rs.next()) {
-				
-				    idMessage = rs.getInt("idMessage");
-				    idUser = rs.getInt("idUser");
-				    timeSent = rs.getString("timeSent");
-				    text = rs.getString("message");
-				    
-				    
-				    message = new Message(idMessage,idUser,text,timeSent);			    
-				    listMessages.add(message);
+				    idUser1 = rs.getInt("idUser");
 				}
 				
+				rs=ResultQuery("select idUser from user where username = '"+username2+"';");
+				while (rs.next()) {
+				    idUser2 = rs.getInt("idUser");
+				}
 				
-				System.out.println("Get all messages");
+				rs=ResultQuery("select idUser1, idUser2, idMessage, message, timeSent from message where (idUser1 ="+idUser1+" AND idUser2 ="+idUser2+") OR (idUser1 ="+idUser2+" AND idUser2 ="+idUser1+");");
 				
+				while (rs.next()) {
+				    idUser1 = rs.getInt("idUser1");
+				    idUser2 = rs.getInt("idUser2");
+				    idMessage = rs.getInt("idMessage");
+				    text = rs.getString("idMessage");
+				    timeSent = rs.getString("timeSent");
+				    message = new Message(idUser1,idUser2,idMessage,text,timeSent);
+				    listMessages.add(message);
+				}
 			} catch (SQLException e) {
 				e.printStackTrace();
-			}finally {
-				close();//close the database	
 			}
+				close();//close the database	
+			
 	        
 			return listMessages;
 		}
@@ -365,37 +305,4 @@ public class DatabaseSQLite extends AbstractDatabase {
 				return contactList;
 		}
 		
-		public void addFriend(String userName, String roomName) {//add a user into a conversation
-			
-			ResultSet rs = null, rs2=null;
-			
-			String userID= null, roomID = null;
-			
-			connect();//Open the database
-				
-		        //Query to get the contact list 
-		        rs=ResultQuery("select idUser from user where username = '"+userName+"';");
-		        rs2=ResultQuery("select idRoom from room where name = '"+roomName+"';");
-		        try {
-		        	while (rs.next()) {
-						userID = rs.getString("idUser");
-		        	}
-		        	while (rs2.next()) {
-						roomID = rs2.getString("idRoom");
-		        	}
-					
-		        	ExecuteQuery("insert into Participants (idRoom, idUser) values ('"+roomID+"','"+userID+"');");
-		        	
-		        	System.out.println("Person added correctly to the group");
-					
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}finally {
-					close();//close the database	
-				}
-		}
-		
-		/*public Message getMessage() {
-			//TODO:get the latest message from the room 
-		}*/
 }

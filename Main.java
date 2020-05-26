@@ -17,6 +17,7 @@ public class Main {
 		/*Creation of the database*/
 		//db.createNewDatabase(); // Connections with the database and creation of tables if database is new		
 		
+		db.createNewDatabase();
 		/*List of contacts*/
 		User Clara = new User("Clacla","Clara","Tricot","1234");
 		User Antoine = new User("Goldby","Antoine","Mairet","1234");
@@ -28,38 +29,27 @@ public class Main {
 		db.CreateAccount(Antoine);
 		db.CreateAccount(Karen);
 		db.CreateAccount(Stella);
-		db.CreateAccount(Nicolas);
+		db.CreateAccount(Nicolas);*/
 		
-		listUsers = db.listContact();
+		/*listUsers = db.listContact();
 		for (int i=0; i< listUsers.size(); i ++) {
 			System.out.println("Surname: "+listUsers.get(i).getUsername()+" FirstName: "+listUsers.get(i).getFirstname()+" LastName: "+listUsers.get(i).getLastname()+" Password: "+listUsers.get(i).getPassword());
 		}*/
 		
-		
-		/*Create a Conversation*/
-		/*listUsers.add(Stella);
-		listUsers.add(Karen);
-		db.creationRoomXUsers("DuoTest",listUsers);*/
-		
-		/*Add friend into a group*/
-		//db.addFriend("Goldby", "DuoTest");
-		
+		db.SaveMessage("CC","Goldby","Clacla");
+		db.SaveMessage("cc","Clacla","Goldby");
+		db.SaveMessage("Ca va ?","Goldby","Clacla");
+		db.SaveMessage("Oui et toi ?","Clacla","Goldby");
 		/*LogIn*/	
 		//db.logIn("Goldby","1234");
 		
-		/*Save Message*/
-		/*db.SaveMessage("Coucou, ça va?","Kk","DuoTest");//Message not saved (WTF ?!)
-		db.SaveMessage("Ouais et toi ?","Stellouch","DuoTest");
-		db.SaveMessage("Tu as bien profité ton week-end?","Stellouch","DuoTest");*/
-		
-		/*Delete Message*/
-		//db.deleteMessage("Tu as bien profité ton week-end?", "Stellouch", "DuoTest");//Delete message from the conversation
+
 		
 		/*List of Message*/
-		/*listMessage = db.retrieveListOfMessageFromRoom(1);
+		listMessage = db.retrieveListOfMessageFromDiscussion("Goldby","Clacla");
 		for(Message m : listMessage) {
 			m.toString();
-		}*/
+		}
 		
 		
 		/*
