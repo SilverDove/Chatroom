@@ -1,15 +1,12 @@
 import java.sql.*;
-import org.h2.tools.Server;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import org.h2.jdbc.JdbcSQLSyntaxErrorException;
-
 public class DatabaseSQLite extends AbstractDatabase {
 	
 	//JDBC driver name and database URL
-		private static final String JDBC_DRIVER = "org.h2.Driver";
+		private static final String JDBC_DRIVER = "org.sqlite.JDBC";
 		private static final String DB_URL = "jdbc:sqlite:test.db";
 		
 		
