@@ -1,7 +1,10 @@
+package Database;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+
+import Items.*;
 
 public class DatabaseSQLite extends AbstractDatabase {
 	
@@ -21,7 +24,6 @@ public class DatabaseSQLite extends AbstractDatabase {
 		private static DatabaseSQLite uniqueInstance = new DatabaseSQLite();
 		
 		public DatabaseSQLite() {
-
 			con = null;
 			st = null;
 		}
@@ -210,6 +212,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 			
 		
 		public ArrayList<Message> retrieveListOfMessageFromDiscussion(String username1,String username2){
+			System.out.println("IN RETRIEVING MESSAGES");
 			ArrayList<Message> listMessages = new ArrayList<Message>();
 			ResultSet rs = null;
 			Message message;
@@ -236,7 +239,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 				    idUser1 = rs.getInt("idUser1");
 				    idUser2 = rs.getInt("idUser2");
 				    idMessage = rs.getInt("idMessage");
-				    text = rs.getString("idMessage");
+				    text = rs.getString("message");
 				    timeSent = rs.getString("timeSent");
 				    message = new Message(idUser1,idUser2,idMessage,text,timeSent);
 				    listMessages.add(message);
@@ -356,6 +359,38 @@ public class DatabaseSQLite extends AbstractDatabase {
 				
 			return id;
 			
+		}
+		
+		public ArrayList<User> getListConnectedUser(String username) {
+			ResultSet rs = null;	
+			
+			String userName, firstName, lastName, password;
+			
+			ArrayList<User> contactList = new ArrayList<User>();
+			
+			connect();//Open the database
+				
+		        //Query to get the contact list 
+		        rs=ResultQuery("select * from user;");
+		        try {
+					while (rs.next()) {
+						userName = rs.getString("username");
+						firstName = rs.getString("firstname");
+						lastName = rs.getString("lastname");
+						password = rs.getString("password");
+						
+						if(userName.equals(username) == false) { //If we didn't find the user currently login
+							contactList.add(new User(userName, firstName, lastName, password));
+						}
+						
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}finally {
+				     close();//close the database	
+				}
+				
+				return contactList;
 		}
 		
 }

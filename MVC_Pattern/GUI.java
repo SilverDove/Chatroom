@@ -1,3 +1,4 @@
+package MVC_Pattern;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -21,16 +22,21 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
+
 import javax.swing.event.ListSelectionEvent;
 
+import Items.*;
 
-public class GUI implements ActionListener, ListSelectionListener {
-	/* --- Variables --- */
-	User currentUser = null;//User currently using the software
-	User contactUser = null;//User with whom currentUser is talking to
-	ArrayList<User> listUser;//List of all User in the database
+
+public class GUI implements ActionListener, ListSelectionListener, IChatroomView, IChatroomObserver {
+	private IChatroomModel chatroomModel;
+	private IChatroomController chatroomController;
 	
-	DatabaseSQLite db;
+	/* --- Variables --- */
+	private User currentUser;//User currently using the software
+	private User contactUser;//User with whom currentUser is talking to
+	private ArrayList<User> listConnectedUser;//List of all connected User
+	private ArrayList<Message> listMessage;//List of all the messages between currentUser and contactUser
 	
 	//String[] data = {"Bob", "Alice", "Jean", "Patrick"}; //Contacts list for example
 	//JList<String> contactsList = new JList<String>(data);
@@ -66,41 +72,49 @@ public class GUI implements ActionListener, ListSelectionListener {
 	JTextArea new_firstname_textArea = new JTextArea(1, 10);
 	JTextArea new_lastname_textArea = new JTextArea(1, 10);
 	
-	public GUI(){
+	public GUI(IChatroomModel model, IChatroomController chatroomController){
+		this.chatroomController = chatroomController;
+		this.chatroomModel = model;
+		this.chatroomModel.registerObserver(this);
 		
-		db = DatabaseSQLite.getInstance();//get the instance of the database
+		this.currentUser=null;
+		this.contactUser=null;
+		listConnectedUser=null;
+		listMessage=null;
 		
-		ConnectionFrame();//Initialization of all the frames
+		ConnectionFrame();//Initialize Connection frames
 	}
 	
-	public void InitializeListContacts(String username) {
+	public void updateUserReceiver(User UserReceiver, User userPopUp) {
+		this.contactUser = UserReceiver;
+		if(userPopUp !=null) {
+			Notification(userPopUp);//Appear new window for notification	
+		}
+	}
+	
+	public void Notification(User userPopup) {
+		//TODO:Display the new window to notify the fact that we receive a message from another User
+	}
+	
+	public void InitializeListContacts() {//List of connected user
 		String fullName = null;
 		int index=0;
 		
-		listUser = db.listContact();//get List of all the users
+		//listUser = contacts;//get List of all the users
+		listConnectedUser = chatroomController.controllerGetListConnectedUsers();
 		DefaultListModel<String> model = new DefaultListModel<>();
 		contactsList = new JList<>(model);
 		
-		System.out.println("InitializeListContacts()");
-		System.out.println("Size of the list is "+listUser.size());
-		for (int i=0; i<listUser.size(); i++) {//Add name and last name of each User in the contactsList
-			if(username.equals(listUser.get(i).getUsername()) == false) {//If we don't find current in the list, we add in the list
-				System.out.println("Not "+username+" so can add");
-				fullName = listUser.get(i).getFirstname() +" "+ listUser.get(i).getLastname();
+		for (int i=0; i<listConnectedUser.size(); i++) {//Add name and last name of each User in the contactsList
+				fullName = listConnectedUser.get(i).getFirstname() +" "+ listConnectedUser.get(i).getLastname();
+				System.out.println(fullName);
 				model.addElement(fullName);
-			}else {
-				index = i;
-			}
 		}
 		
-		listUser.remove(index);
-	
-		PrincipalFrame();//Display Chatroom
-		
+		PrincipalFrame();//Initialize Chatroom frames
 	}
 	
-	public void PrincipalFrame() {
-		//Principal frame initialization
+	public void PrincipalFrame() {//Principal frame initialization
 				principal_frame.setMinimumSize(new Dimension(1280, 800));
 				principal_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				
@@ -146,9 +160,7 @@ public class GUI implements ActionListener, ListSelectionListener {
 		
 	}
 	
-	public void ConnectionFrame() {
-		
-		//Connection frame initialization
+	public void ConnectionFrame() {//Connection frame initialization
 		connection_frame.setMinimumSize(new Dimension(500, 100));
 		connection_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
@@ -219,11 +231,14 @@ public class GUI implements ActionListener, ListSelectionListener {
 		case "send"://Send a message in the chat
 			String message = message_textArea.getText();
 			JLabel new_message = new JLabel(message);
-			messagesPanel.add(new_message);
-			messagesPanel.updateUI();
-			message_textArea.setText(null);
+			if(contactUser != null) {
+				messagesPanel.add(new_message);
+				messagesPanel.updateUI();
+				message_textArea.setText(null);
 			
-			//TODO: Save message into the database	
+				//Save message into the database	
+				chatroomController.controllerSaveMessage(message);
+			}
 			
 			break;
 		case "login"://Log in the Chatroom
@@ -232,13 +247,17 @@ public class GUI implements ActionListener, ListSelectionListener {
 			password = password_textArea.getText();
 			
 			//Check if the user exists in the database
-			flag = db.logIn(username,password);
+			flag = chatroomController.controllerLogIn(username, password);
+			System.out.println("LOGIN DONE");
 			
-			if(flag == false) {//Wrong password/usernage
+			if(flag == false) {//Wrong password/username
 				JOptionPane.showMessageDialog(error_frame, "Your password/username is incorrect. Please try again", "Error", JOptionPane.ERROR_MESSAGE);
 			}else {//Correct information about the user
-				currentUser = db.getUser(username);//get information about the current user 
-				InitializeListContacts(username);//Initialize list of contacts
+				currentUser = chatroomController.controllerGetUser(username);//get information about the current user 
+				chatroomController.controllerSetUserLogin(currentUser);//set currentUser in the Model
+				System.out.println("BEFORE INITIALIZE LIST CONTACT");
+				InitializeListContacts();//Initialize list of contacts
+				System.out.println("END INITIALIZE LIST CONTACT");
 				//Display the chatroom
 				connection_frame.setVisible(false);
 				principal_frame.setLocationRelativeTo(null);
@@ -268,7 +287,8 @@ public class GUI implements ActionListener, ListSelectionListener {
 			
 			//Save new user into the database
 			newUser = new User(username,firstname,lastname,password);//create user
-			db.CreateAccount(newUser);//add the new user into the database
+			System.out.println(newUser.toString());
+			chatroomController.controllerNewAccount(newUser);//add the new user into the database
 			
 			//Clear the contents of the textArea
 			new_username_textArea.setText(null);
@@ -288,18 +308,21 @@ public class GUI implements ActionListener, ListSelectionListener {
 		    if (e.getValueIsAdjusting() == false) { //if the user is not manipulating the selection anymore
 		    	/*Get information about the user when click on a specific contact*/
 		    	int index = (Integer) contactsList.getSelectedIndex();//Get the index where the user clicked
-		    	contactUser = listUser.get(index);//Save current contact User
+		    	contactUser = listConnectedUser.get(index);//Save current contact User
+		    	chatroomController.controllerSetUserReceiver(contactUser);//SetCurrentcontactUser in the Model
 		    	
 		    	/*Display the records of the chat with the selected contact*/
-		    	ArrayList<Message> messageConversation = db.retrieveListOfMessageFromDiscussion(contactUser.getUsername(), currentUser.getUsername());//Retrieve all the messages
+		    	ArrayList<Message> messageConversation = chatroomController.controllerGetListMessageFromConversation();//Retrieve all the messages;
 		    	
 		    	JLabel displayMessage;
 		    	Message m;
 		    	
 		    	if (messageConversation.size()!=0) {
+		    		messagesPanel.removeAll();
+		    		messagesPanel.updateUI();
 		    		for (int i=0 ;i<messageConversation.size(); i++) {
 			    		m = messageConversation.get(i);
-			    		if(m.getIdUser1() == db.getIDFromUsername(contactUser.getUsername())) {//If the contact send the message
+			    		if(m.getIdUser1() == chatroomController.controllerGetIDFromUsername(contactUser.getUsername())) {//If the contact send the message
 			    			displayMessage = new JLabel(contactUser.getFirstname()+" "+contactUser.getLastname());
 			    			messagesPanel.add(displayMessage);
 			    			displayMessage = new JLabel(m.getTimesent());
@@ -329,8 +352,6 @@ public class GUI implements ActionListener, ListSelectionListener {
 		    		messagesPanel.removeAll();
 		    		messagesPanel.updateUI();
 		    	}
-		    	
-		    	
 		    
 		    	//to get the name of the selected contact just use contactsList.getSelectedValue()
 		    	//the following code is just shown as an example of how this works
@@ -342,6 +363,9 @@ public class GUI implements ActionListener, ListSelectionListener {
 
 	
 	public static void main(String[] args) {
-		new GUI();
+		
+		IChatroomModel model = new ChatroomModel();
+		new ChatroomController(model);
+		
 	}
 }
