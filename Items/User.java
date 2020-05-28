@@ -14,7 +14,7 @@ public class User {
 		
 	}
 	
-	public String toString() { // Override the toString method		
+	public String toString() {	
 		return "Username: "+this.username +"  Firstname:"+this.firstname +"  Lastname:"+this.lastname +"  Password:"+ this.password;
 	}
 	

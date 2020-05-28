@@ -13,9 +13,8 @@ public class Message {
 		this.text = text;
 		this.timeSent = timeSent;	
 	}
-	public String toString() { // Override the toString method		
-		System.out.println("idUser1: "+this.idUser1 +"idUser2: "+this.idUser2 +"   idMessage: "+this.idMessage +"   Text: "+this.text +"   TimeSent: "+ this.timeSent);
-		return null;
+	public String toString() { 
+		return "idUser1: "+this.idUser1 +"idUser2: "+this.idUser2 +"   idMessage: "+this.idMessage +"   Text: "+this.text +"   TimeSent: "+ this.timeSent;
 	}	
 	public void setIdUser1(int idUser1) {
 		this.idUser1 = idUser1;

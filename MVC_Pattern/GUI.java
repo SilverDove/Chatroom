@@ -38,9 +38,6 @@ public class GUI implements ActionListener, ListSelectionListener, IChatroomView
 	private ArrayList<User> listConnectedUser;//List of all connected User
 	private ArrayList<Message> listMessage;//List of all the messages between currentUser and contactUser
 	
-	//String[] data = {"Bob", "Alice", "Jean", "Patrick"}; //Contacts list for example
-	//JList<String> contactsList = new JList<String>(data);
-	
 	JList<String> contactsList = new JList<String>();//List of contact 
 	
 	//Creation of frames
@@ -85,10 +82,15 @@ public class GUI implements ActionListener, ListSelectionListener, IChatroomView
 		ConnectionFrame();//Initialize Connection frames
 	}
 	
-	public void updateUserReceiver(User UserReceiver, User userPopUp) {
+	public void updateGUI(User UserReceiver, User userPopUp) {//Update GUI when user receives a new message
 		this.contactUser = UserReceiver;
-		if(userPopUp !=null) {
+		
+		if(userPopUp !=UserReceiver) {//The user is not on the same page as userPopUp
 			Notification(userPopUp);//Appear new window for notification	
+		}
+		
+		if(userPopUp == UserReceiver) {//The user is on the same page as userPopUp
+			displayConversation();//Refresh the conversation
 		}
 	}
 	
@@ -96,12 +98,56 @@ public class GUI implements ActionListener, ListSelectionListener, IChatroomView
 		//TODO:Display the new window to notify the fact that we receive a message from another User
 	}
 	
-	public void InitializeListContacts() {//List of connected user
+	public void displayConversation() {//Update display of the messages
+		/*Display the records of the chat with the selected contact*/
+    	ArrayList<Message> messageConversation = chatroomController.controllerGetListMessageFromConversation();//Retrieve all the messages;
+    	
+    	JLabel displayMessage;
+    	Message m;
+    	
+    	if (messageConversation.size()!=0) {//If there is messages
+    		/*Refresh display*/
+    		messagesPanel.removeAll();
+    		messagesPanel.updateUI();
+    		
+    		for (int i=0 ;i<messageConversation.size(); i++) {//For every message
+	    		m = messageConversation.get(i);
+	    		if(m.getIdUser1() == chatroomController.controllerGetIDFromUsername(contactUser.getUsername())) {//If the contact sent the message
+	    			displayMessage = new JLabel(contactUser.getFirstname()+" "+contactUser.getLastname());
+	    			messagesPanel.add(displayMessage);
+	    			
+	    		}else {//if the current user sent the message
+	    			displayMessage = new JLabel(currentUser.getFirstname()+" "+currentUser.getLastname());
+	    			messagesPanel.add(displayMessage);
+	    		}
+	    		
+	    		//Display message
+	    		displayMessage = new JLabel(m.getTimesent());
+    			messagesPanel.add(displayMessage);
+    			displayMessage = new JLabel(m.getText());
+    			messagesPanel.add(displayMessage);
+    			displayMessage = new JLabel(" ");
+    			messagesPanel.add(displayMessage);
+    			messagesPanel.add(displayMessage);
+	    		messagesPanel.add(displayMessage);
+	    		messagesPanel.updateUI();
+	    	}
+    		
+    	}else {//there is no message
+    		/*Nothing to show*/
+    		messagesPanel.removeAll();
+    		messagesPanel.updateUI();
+    	}
+		
+	}
+	
+	public void InitializeListContacts() {//Get list of connected users
 		String fullName = null;
 		int index=0;
 		
-		//listUser = contacts;//get List of all the users
-		listConnectedUser = chatroomController.controllerGetListConnectedUsers();
+		listConnectedUser = chatroomController.controllerGetListConnectedUsers();//Get List of connected users
+		
+		/*Display the list of connected users*/
 		DefaultListModel<String> model = new DefaultListModel<>();
 		contactsList = new JList<>(model);
 		
@@ -222,7 +268,7 @@ public class GUI implements ActionListener, ListSelectionListener, IChatroomView
 		
 	}
 
-	public void actionPerformed(ActionEvent e) {
+	public void actionPerformed(ActionEvent e) {//Action performed after clicking buttons, etc...
 		String username = null, firstname = null, lastname = null, password = null;
 		User newUser = null;//User to add in the database (create new account)
 		boolean flag =false;
@@ -231,13 +277,10 @@ public class GUI implements ActionListener, ListSelectionListener, IChatroomView
 		case "send"://Send a message in the chat
 			String message = message_textArea.getText();
 			JLabel new_message = new JLabel(message);
-			if(contactUser != null) {
-				messagesPanel.add(new_message);
-				messagesPanel.updateUI();
-				message_textArea.setText(null);
 			
-				//Save message into the database	
-				chatroomController.controllerSaveMessage(message);
+			if(contactUser != null) {//If the user selected one person to talk to
+				chatroomController.controllerSaveMessage(message);//Save the message into the database	
+				displayConversation();//update display
 			}
 			
 			break;
@@ -248,22 +291,22 @@ public class GUI implements ActionListener, ListSelectionListener, IChatroomView
 			
 			//Check if the user exists in the database
 			flag = chatroomController.controllerLogIn(username, password);
-			System.out.println("LOGIN DONE");
 			
 			if(flag == false) {//Wrong password/username
-				JOptionPane.showMessageDialog(error_frame, "Your password/username is incorrect. Please try again", "Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(error_frame, "Your password/username is incorrect. Please try again", "Error", JOptionPane.ERROR_MESSAGE);//Display error message
 			}else {//Correct information about the user
-				currentUser = chatroomController.controllerGetUser(username);//get information about the current user 
-				chatroomController.controllerSetUserLogin(currentUser);//set currentUser in the Model
-				System.out.println("BEFORE INITIALIZE LIST CONTACT");
+				currentUser = chatroomController.controllerGetUser(username);//Get information about the current user 
+				chatroomController.controllerSetUserLogin(currentUser);//Set currentUser in the Model
+				
 				InitializeListContacts();//Initialize list of contacts
-				System.out.println("END INITIALIZE LIST CONTACT");
+				
 				//Display the chatroom
 				connection_frame.setVisible(false);
 				principal_frame.setLocationRelativeTo(null);
 				principal_frame.pack();
 				principal_frame.setVisible(true);
 			}
+			
 			//Clear the contents of the textArea
 			username_textArea.setText(null);
 			password_textArea.setText(null);
@@ -271,7 +314,6 @@ public class GUI implements ActionListener, ListSelectionListener, IChatroomView
 			break;
 			
 		case "new_account":
-			
 			new_account_frame.setLocationRelativeTo(null);
 			new_account_frame.pack();
 			new_account_frame.setVisible(true);
@@ -287,83 +329,41 @@ public class GUI implements ActionListener, ListSelectionListener, IChatroomView
 			
 			//Save new user into the database
 			newUser = new User(username,firstname,lastname,password);//create user
-			System.out.println(newUser.toString());
-			chatroomController.controllerNewAccount(newUser);//add the new user into the database
 			
+			//check that the user doesn't already exist
+			if(chatroomController.controllerGetUser(username)==null) {//This newUser is not in the database
+				chatroomController.controllerNewAccount(newUser);//add the new user into the database
+			}else {//newUser already exists
+				JOptionPane.showMessageDialog(error_frame, "This username already exist", "Error", JOptionPane.ERROR_MESSAGE);//Display error
+			}
+		
 			//Clear the contents of the textArea
 			new_username_textArea.setText(null);
 			new_firstname_textArea.setText(null);
 			new_lastname_textArea.setText(null);
 			new_password_textArea.setText(null);
 			
-			//GUI
+			//Update display
 			new_account_frame.setVisible(false);
 			connection_frame.setVisible(true);
+			
 			break;
 		}
 	}
 	
-	//If the user clicks on a contact in the list
-		public void valueChanged(ListSelectionEvent e) {
+		public void valueChanged(ListSelectionEvent e) {//If the user clicks on a contact in the list
 		    if (e.getValueIsAdjusting() == false) { //if the user is not manipulating the selection anymore
-		    	/*Get information about the user when click on a specific contact*/
+		    	//Get information about the user when click on a specific contact
 		    	int index = (Integer) contactsList.getSelectedIndex();//Get the index where the user clicked
 		    	contactUser = listConnectedUser.get(index);//Save current contact User
 		    	chatroomController.controllerSetUserReceiver(contactUser);//SetCurrentcontactUser in the Model
 		    	
-		    	/*Display the records of the chat with the selected contact*/
-		    	ArrayList<Message> messageConversation = chatroomController.controllerGetListMessageFromConversation();//Retrieve all the messages;
-		    	
-		    	JLabel displayMessage;
-		    	Message m;
-		    	
-		    	if (messageConversation.size()!=0) {
-		    		messagesPanel.removeAll();
-		    		messagesPanel.updateUI();
-		    		for (int i=0 ;i<messageConversation.size(); i++) {
-			    		m = messageConversation.get(i);
-			    		if(m.getIdUser1() == chatroomController.controllerGetIDFromUsername(contactUser.getUsername())) {//If the contact send the message
-			    			displayMessage = new JLabel(contactUser.getFirstname()+" "+contactUser.getLastname());
-			    			messagesPanel.add(displayMessage);
-			    			displayMessage = new JLabel(m.getTimesent());
-			    			messagesPanel.add(displayMessage);
-			    			displayMessage = new JLabel(m.getText());
-			    			messagesPanel.add(displayMessage);
-			    			displayMessage = new JLabel(" ");
-			    			messagesPanel.add(displayMessage);
-			    			messagesPanel.add(displayMessage);
-
-			    			
-			    		}else {//if the current user send the message
-			    			displayMessage = new JLabel(currentUser.getFirstname()+" "+currentUser.getLastname());
-			    			messagesPanel.add(displayMessage);
-			    			displayMessage = new JLabel(m.getTimesent());
-			    			messagesPanel.add(displayMessage);
-			    			displayMessage = new JLabel(m.getText());
-			    			messagesPanel.add(displayMessage);
-			    			displayMessage = new JLabel(" ");
-			    			messagesPanel.add(displayMessage);
-			    			messagesPanel.add(displayMessage);
-			    		}
-			    		messagesPanel.add(displayMessage);
-			    		messagesPanel.updateUI();
-			    	}
-		    	}else {
-		    		messagesPanel.removeAll();
-		    		messagesPanel.updateUI();
-		    	}
-		    
-		    	//to get the name of the selected contact just use contactsList.getSelectedValue()
-		    	//the following code is just shown as an example of how this works
-		    	/*JLabel coucou = new JLabel(contactsList.getSelectedValue());
-		    	messagesPanel.add(coucou);
-		    	messagesPanel.updateUI();*/
+		    	displayConversation();//display all the message of the conversation
 		    }
 		}
 
 	
 	public static void main(String[] args) {
-		
 		IChatroomModel model = new ChatroomModel();
 		new ChatroomController(model);
 		

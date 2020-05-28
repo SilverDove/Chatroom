@@ -22,7 +22,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 		
 	//Singleton Pattern
 		private static DatabaseSQLite uniqueInstance = new DatabaseSQLite();
-		
+	
 		private DatabaseSQLite() {
 			con = null;
 			st = null;
@@ -32,7 +32,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 			return uniqueInstance;
 		}
 		
-		public void connect() {
+		public void connect() {//Connection to the database
 			con = null;
 			try {
 				//Register JDBC driver 
@@ -51,7 +51,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 	        }
 		}
 		
-		public void close() {
+		public void close() {//Disconnect from the database
 			try {
 				con.close();
 				st.close();
@@ -60,7 +60,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 	        }
 		}
 		
-		public ResultSet ResultQuery(String request) {
+		public ResultSet ResultQuery(String request) {//Get result from query
 			ResultSet result = null;
 		       try {
 		    	   st = con.createStatement();
@@ -73,7 +73,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 		      return result;
 		}
 		
-		public void ExecuteQuery(String request) {
+		public void ExecuteQuery(String request) {//Execute the query
 		       try {
 		    	   st = con.createStatement();
 		           st.execute(request);
@@ -83,7 +83,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 		       }
 		}
 		
-		public void createNewDatabase(){//Creation of our database	
+		public void createNewDatabase(){//Creation of the database (to be done only once)
 			connect();//Open the database
 			
 			//Create tables if they don't exist
@@ -117,7 +117,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 				
 		}
 		
-		public void CreateAccount(User user) {//Add a new user into the database (sign up)
+		public void CreateAccount(User user) {//Add a new user into the database
 			
 			connect();//Open the database
 		        
@@ -132,7 +132,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 		   
 		}
 		
-		public boolean logIn(String username, String password) {// Check if a user can use the app
+		public boolean logIn(String username, String password) {// Check if a user is register in the database 
 			boolean flag=false;
 			ResultSet rs = null;
 			
@@ -147,12 +147,13 @@ public class DatabaseSQLite extends AbstractDatabase {
 				    String  firstname = rs.getString("firstname");
 				    String  lastname = rs.getString("lastname");
 				    String password1 = rs.getString("password");
-				       
-				    if ( (username.equals(username1)) && (password.equals(password1)) ) { // Check if the username and password match with a user
+				      
+				    //Check if the username and password match with a user
+				    if ( (username.equals(username1)) && (password.equals(password1)) ) { //If it matches 
 				    	flag=true;
 				    	System.out.println("Welcome back,"+firstname+" "+lastname);
 				    	
-				    	updateTimeConnectionUser(username);
+				    	updateTimeConnectionUser(username);//Update user connection time
 				    	return true;
 				    }
 				 }
@@ -175,21 +176,22 @@ public class DatabaseSQLite extends AbstractDatabase {
 		public void updateTimeConnectionUser(String username) {//Update the connection time of the user
 			//Query to change the date
 		    sql = "UPDATE user set lastConnection = datetime('now') where username = '"+username+"'  ;";
-		    ExecuteQuery(sql);	//execute the query
-		        
+		    ExecuteQuery(sql);	//execute the query       
 		}
 		
-		public void SaveMessage(String messageSend, String userSender, String userReceiver)  {//Save messages send and receive 
+		public void SaveMessage(String messageSend, String userSender, String userReceiver)  {//Save messages
 			ResultSet rs = null;
 			int idUser1 = 0,idUser2 = 0;
 			connect();//Open the database
 			
 	        try {
+	        	//Get user id of the Sender
 	        	rs=ResultQuery("select idUser from user where username ='"+userSender+"';");	        
 	        	while (rs.next()) {
 	        		idUser1 = rs.getInt("idUser");
 	        	}
-			
+	        	
+	        	//Get user id of the Receiver
 	        	rs=ResultQuery("select idUser from user where username ='"+userReceiver+"';");
 	        	while (rs.next()) {
 	        		idUser2 = rs.getInt("idUser");
@@ -198,44 +200,44 @@ public class DatabaseSQLite extends AbstractDatabase {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-		    ExecuteQuery("insert into message (idUser1,idUser2,timeSent,message) values ('"+idUser1+"', '"+idUser2+"', datetime('now'), '"+userSender+" :"+messageSend+"');");
+	        
+		    ExecuteQuery("insert into message (idUser1,idUser2,timeSent,message) values ('"+idUser1+"', '"+idUser2+"', datetime('now'), '"+userSender+" :"+messageSend+"');");//execute query
 			System.out.println("Message save in the table Message");
-					
+			
+			//Update time connection of the users
 			updateTimeConnectionUser(userSender);
-			System.out.println("Get time update!");
+			updateTimeConnectionUser(userReceiver);
 					
-			//Close the database
 			close();//Close the database
 
 
 		}
-			
 		
-		public ArrayList<Message> retrieveListOfMessageFromDiscussion(String username1,String username2){
-			System.out.println("IN RETRIEVING MESSAGES");
+		public ArrayList<Message> retrieveListOfMessageFromDiscussion(String username1,String username2){//Get all the messages sent by 2 people
 			ArrayList<Message> listMessages = new ArrayList<Message>();
 			ResultSet rs = null;
 			Message message;
 			int idUser1=0,idUser2 = 0,idMessage=0;
 			String text, timeSent;
+			
 			connect();//Open the database
 			
-
 	        try {
-	        	
+	        	//Get user id of the Sender
 				rs=ResultQuery("select idUser from user where username = '"+username1+"';");	        
 				while (rs.next()) {
 				    idUser1 = rs.getInt("idUser");
 				}
-				
+				//Get user id of the Receiver
 				rs=ResultQuery("select idUser from user where username = '"+username2+"';");
 				while (rs.next()) {
 				    idUser2 = rs.getInt("idUser");
 				}
 				
+				//Query to get messages from 2 users
 				rs=ResultQuery("select idUser1, idUser2, idMessage, message, timeSent from message where (idUser1 ="+idUser1+" AND idUser2 ="+idUser2+") OR (idUser1 ="+idUser2+" AND idUser2 ="+idUser1+");");
 				
-				while (rs.next()) {
+				while (rs.next()) {//Save all the messages into a list
 				    idUser1 = rs.getInt("idUser1");
 				    idUser2 = rs.getInt("idUser2");
 				    idMessage = rs.getInt("idMessage");
@@ -256,8 +258,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 		public ArrayList<User> listContact() {//returns the list of contact
 			ResultSet rs = null;	
 			
-			String userName, firstName, lastName, password;
-			
+			String userName, firstName, lastName, password;	
 			ArrayList<User> contactList = new ArrayList<User>();
 			
 			connect();//Open the database
@@ -291,7 +292,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 			
 			connect();//Open the database
 				
-		        //Query to get the contact list 
+		        //Query to get the user
 		        rs=ResultQuery("select * from user where username = '"+username+"';");
 		        try {
 					while (rs.next()) {
@@ -312,14 +313,14 @@ public class DatabaseSQLite extends AbstractDatabase {
 				return user;
 		}
 		
-		public int getIDFromUsername(String username) {
+		public int getIDFromUsername(String username) {//Get user id from username
 			//Variables
 			ResultSet rs = null;	
 			int id=0;
 			
 			connect();//Open the database
 				
-		        //Query to get the contact list 
+		        //Query to get the user 
 		        rs=ResultQuery("select idUser from user where username = '"+username+"';");
 		        try {
 					while (rs.next()) {
@@ -335,16 +336,15 @@ public class DatabaseSQLite extends AbstractDatabase {
 			
 		}
 		
-		public ArrayList<User> getListConnectedUser(String username) {
+		public ArrayList<User> getListConnectedUser(String username) {//Get list of connected users
 			ResultSet rs = null;	
 			
-			String userName, firstName, lastName, password;
-			
+			String userName, firstName, lastName, password;			
 			ArrayList<User> contactList = new ArrayList<User>();
 			
 			connect();//Open the database
 				
-		        //Query to get the contact list 
+		        //Query to get the contact list of connected users 
 		        rs=ResultQuery("select * from user;");
 		        try {
 					while (rs.next()) {
@@ -354,7 +354,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 						password = rs.getString("password");
 						
 						if(userName.equals(username) == false) { //If we didn't find the user currently login
-							contactList.add(new User(userName, firstName, lastName, password));
+							contactList.add(new User(userName, firstName, lastName, password));//Add the connected user into the list
 						}
 						
 					}
