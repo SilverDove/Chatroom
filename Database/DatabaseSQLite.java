@@ -23,7 +23,7 @@ public class DatabaseSQLite extends AbstractDatabase {
 	//Singleton Pattern
 		private static DatabaseSQLite uniqueInstance = new DatabaseSQLite();
 		
-		public DatabaseSQLite() {
+		private DatabaseSQLite() {
 			con = null;
 			st = null;
 		}
@@ -251,32 +251,6 @@ public class DatabaseSQLite extends AbstractDatabase {
 			
 	        
 			return listMessages;
-		}
-		
-		public void deleteMessage(String messageToDelete, String username, String roomName) {//Delete message from the conversation
-			ResultSet rs = null;	
-			
-			connect();//Open the database
-				
-		        //Query to delete a message from the database
-		        rs=ResultQuery("select idUser, idRoom from participants where idUser is (select idUser from user where username = '"+username+"') and idRoom is (select idRoom from room where name = '"+roomName+"');");
-		        try {
-					while (rs.next()) {
-						int idUser = rs.getInt("idUser");
-						int idRoom = rs.getInt("idRoom");
-						
-						ExecuteQuery("delete from message where idUser = "+idUser+" and idRoom = "+idRoom+" and message = '"+messageToDelete+"';");
-					}
-					
-			        updateTimeConnectionUser(username);
-			        
-			        System.out.println("Message deleted with success");
-					
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}finally {        
-				     close();//close the database	
-				}
 		}
 		
 		public ArrayList<User> listContact() {//returns the list of contact
