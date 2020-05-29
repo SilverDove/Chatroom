@@ -2,6 +2,7 @@ package client;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -18,12 +19,16 @@ public class ServerThread implements Runnable
     private final LinkedList<String> messagesToSend;
     //boolean to verify if there is a message in the list
     private boolean hasMessages = false;
+    private AES clientEncryptor;
+    private ObjectOutputStream objectOStream;
+    private MessagePacket clientPacket;
     
-    public ServerThread(Socket socket, String userName){
+    
+    public ServerThread(Socket socket, String userName, AES encryptor) throws IOException{
         this.socket = socket;
         this.userName = userName;
         messagesToSend = new LinkedList<String>();
-        
+        clientEncryptor = encryptor;
     }
 
     public void addNextMessage(String message){
@@ -45,11 +50,13 @@ public class ServerThread implements Runnable
             InputStream serverInStream = socket.getInputStream();
             serverOut.write(userName + "\n");
             serverOut.flush();
+            serverOut = null;
             
             Scanner serverIn = new Scanner(serverInStream);
-            // BufferedReader userBr = new BufferedReader(new InputStreamReader(userInStream));
-            // Scanner userIn = new Scanner(userInStream);
-
+            
+            //Instantiating the stream to send our packets
+            objectOStream = new ObjectOutputStream(socket.getOutputStream());
+            
             while(!socket.isClosed()){
                 if(serverInStream.available() > 0){
                     if(serverIn.hasNextLine()){
@@ -66,32 +73,28 @@ public class ServerThread implements Runnable
                     //For private message, format is /username/messagetosend
                     if(nextSend.contains("/"))
                     {
-                    	String toSend = "";
-                    	
                     	//We split the string corresponding to the command to extract the username
                     	//of the receiver and the message to send
                     	String[] result = nextSend.split("/");
-                    	serverOut.write(result[1]+"\n"); 
                     	
-                    	//We send to the server the first element splited: the receiver's name
-                    	serverOut.flush();
-                    	toSend = "From " + userName + " > " + result[2] + "\n";
-                    	serverOut.write(toSend);
+                    	clientPacket = new MessagePacket(result[1],userName,result[2],clientEncryptor);
+                    	clientPacket.encryptMessage();
                     	
-                    	//We send to the server the message to print to the receiver
-                    	serverOut.flush();
-                    	
-                    	toSend = "To " + result[1] + " > " + result[2] + "\n";
-                    	serverOut.write(toSend);
-                    	
-                    	//We send to the server the message to print to the sender
-                    	serverOut.flush();
+                    	objectOStream.reset();
+                    	objectOStream.writeObject(clientPacket);
+                    	objectOStream.flush();
                     }
                     //We print a normal message 
                     else if(!(nextSend.isEmpty()))
                     {
-                    	serverOut.println(userName + " > " + nextSend);
-                        serverOut.flush();
+                    	clientPacket = new MessagePacket(userName,nextSend);
+                    	
+                    	objectOStream.reset();
+                    	objectOStream.writeObject(clientPacket);
+                    	objectOStream.flush();
+                    	//objectOStream.close();
+                    	//serverOut.println(userName + " > " + nextSend);
+                        //serverOut.flush();
                     }
                 }
             }

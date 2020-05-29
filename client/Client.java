@@ -17,7 +17,8 @@ public class Client
     private String serverHost;
     private int serverPort;
     private Scanner userInputScanner;
-
+    private AES clientEncriptor;
+    
     public static void main(String[] args){
         String readName = null;
         Scanner scan = new Scanner(System.in);
@@ -39,15 +40,16 @@ public class Client
         this.userName = userName;
         this.serverHost = host;
         this.serverPort = portNumber;
+        clientEncriptor = new AES();
     }
 
     private void startClient(Scanner scan){
         try{
             Socket socket = new Socket(serverHost, serverPort);
             Thread.sleep(1000); // waiting for network communicating.
-
+            
             //initiating a server thread
-            ServerThread serverThread = new ServerThread(socket, userName);
+            ServerThread serverThread = new ServerThread(socket, userName, clientEncriptor);
             Thread serverAccessThread = new Thread(serverThread);
             serverAccessThread.start();
             
