@@ -24,6 +24,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 
 import javax.swing.event.ListSelectionEvent;
+import java.util.List;
 
 import Items.*;
 
@@ -39,6 +40,7 @@ public class GUI implements ActionListener, ListSelectionListener, IChatroomView
 	private ArrayList<Message> listMessage;//List of all the messages between currentUser and contactUser
 	
 	JList<String> contactsList = new JList<String>();//List of contact 
+	static List<Integer> colorToChangeList = new ArrayList<Integer>();
 	
 	//Creation of frames
 	JFrame principal_frame = new JFrame("Chat GUI");
@@ -94,10 +96,21 @@ public class GUI implements ActionListener, ListSelectionListener, IChatroomView
 		}
 	}
 	
-	public void Notification(User userPopup) {
-		//TODO:Display the new window to notify the fact that we receive a message from another User
+	public void Notification(User userPopup) {//Display the new window to notify the fact that we receive a message from another User
+		colorToChangeList.add(getIndexFromName(userPopup.getUsername()));
+		contactsPanel.updateUI();
+
 	}
 	
+	public int getIndexFromName(String name) {//Give the index of the person we give the name
+		for(int i = 0; i<listConnectedUser.size(); i++) {
+			if(name.equals(listConnectedUser.get(i).getUsername())==true) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
 	public void displayConversation() {//Update display of the messages
 		/*Display the records of the chat with the selected contact*/
     	ArrayList<Message> messageConversation = chatroomController.controllerGetListMessageFromConversation();//Retrieve all the messages;
@@ -153,7 +166,6 @@ public class GUI implements ActionListener, ListSelectionListener, IChatroomView
 		
 		for (int i=0; i<listConnectedUser.size(); i++) {//Add name and last name of each User in the contactsList
 				fullName = listConnectedUser.get(i).getFirstname() +" "+ listConnectedUser.get(i).getLastname();
-				System.out.println(fullName);
 				model.addElement(fullName);
 		}
 		
@@ -171,6 +183,8 @@ public class GUI implements ActionListener, ListSelectionListener, IChatroomView
 				listScroller.setPreferredSize(new Dimension(260, 560));
 				contactsPanel.add(listScroller);
 				contactsList.addListSelectionListener(this);
+			
+				contactsList.setCellRenderer(new CellColorRenderer());
 				
 				send.setActionCommand("send");
 				send.addActionListener(this);
@@ -277,8 +291,8 @@ public class GUI implements ActionListener, ListSelectionListener, IChatroomView
 		case "send"://Send a message in the chat
 			String message = message_textArea.getText();
 			JLabel new_message = new JLabel(message);
-			
-			if(contactUser != null) {//If the user selected one person to talk to
+	
+			if(contactUser != null && message.contentEquals("")==false) {//If the user selected one person to talk to and write something
 				chatroomController.controllerSaveMessage(message);//Save the message into the database	
 				displayConversation();//update display
 			}
@@ -359,6 +373,12 @@ public class GUI implements ActionListener, ListSelectionListener, IChatroomView
 		    	chatroomController.controllerSetUserReceiver(contactUser);//SetCurrentcontactUser in the Model
 		    	
 		    	displayConversation();//display all the message of the conversation
+		    	
+		    	//Change color of the list
+		    	if(colorToChangeList.contains(contactsList.getSelectedIndex())) {//If the selected item is in the list of items to change the color i.e. if it is green
+		    		colorToChangeList.remove(0);//remove it from the list to change it back to white
+		    		contactsPanel.updateUI();
+		    	}    	
 		    }
 		}
 
