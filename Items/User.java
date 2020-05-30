@@ -15,7 +15,7 @@ public class User {
 	}
 	
 	public String toString() {	
-		return "Username: "+this.username +"  Firstname:"+this.firstname +"  Lastname:"+this.lastname +"  Password:"+ this.password;
+		return "Username: "+this.username +" Firstname: "+this.firstname +" Lastname: "+this.lastname +" Password: "+ this.password;
 	}
 	
 	public void setUsername(String username) {

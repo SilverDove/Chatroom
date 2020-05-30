@@ -14,7 +14,7 @@ public class Message {
 		this.timeSent = timeSent;	
 	}
 	public String toString() { 
-		return "idUser1: "+this.idUser1 +"idUser2: "+this.idUser2 +"   idMessage: "+this.idMessage +"   Text: "+this.text +"   TimeSent: "+ this.timeSent;
+		return "idUser1: "+this.idUser1 +" idUser2: "+this.idUser2 +" idMessage: "+this.idMessage +" Text: "+this.text +" TimeSent: "+ this.timeSent;
 	}	
 	public void setIdUser1(int idUser1) {
 		this.idUser1 = idUser1;
@@ -43,7 +43,7 @@ public class Message {
 	public String getText() {
 		return this.text;
 	}
-	public String getTimesent() {
+	public String getTimeSent() {
 		return this.timeSent;
 	}
 	
