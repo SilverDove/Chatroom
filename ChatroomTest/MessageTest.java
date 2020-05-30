@@ -8,7 +8,6 @@ import Items.Message;
 
 public class MessageTest {
 
-
 	@Test
 	public void testToString() {
 		Message msg = new Message(1,2,10,"Test msg","Date test");
