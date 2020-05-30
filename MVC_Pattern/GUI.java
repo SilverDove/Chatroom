@@ -135,7 +135,7 @@ public class GUI implements ActionListener, ListSelectionListener, IChatroomView
 	    		}
 	    		
 	    		//Display message
-	    		displayMessage = new JLabel(m.getTimesent());
+	    		displayMessage = new JLabel(m.getTimeSent());
     			messagesPanel.add(displayMessage);
     			displayMessage = new JLabel(m.getText());
     			messagesPanel.add(displayMessage);

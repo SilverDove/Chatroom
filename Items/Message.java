@@ -47,4 +47,23 @@ public class Message {
 		return this.timeSent;
 	}
 	
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		
+		if (o == null || getClass()!=o.getClass()) {
+			return false;
+		}
+		
+		Message m = (Message) o;
+		
+		return new org.apache.commons.lang3.builder.EqualsBuilder()
+				.append(idUser1, m.idUser1)
+				.append(idUser2, m.idUser2)
+				.append(idMessage, m.idMessage)
+				.append(text, m.text)
+				.append(timeSent, m.timeSent)
+				.isEquals();
+		
+	}	
+	
 }

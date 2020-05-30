@@ -1,8 +1,10 @@
-package Items;
+package ChatroomTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+
+import Items.Message;
 
 public class MessageTest {
 

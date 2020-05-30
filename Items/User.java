@@ -50,5 +50,21 @@ public class User {
 		return this.password;
 	}
 
-
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		
+		if (o == null || getClass()!=o.getClass()) {
+			return false;
+		}
+		
+		User user = (User) o;
+		
+		return new org.apache.commons.lang3.builder.EqualsBuilder()
+				.append(username, user.username)
+				.append(firstname, user.firstname)
+				.append(lastname, user.lastname)
+				.append(password, user.password)
+				.isEquals();
+		
+	}	
 }

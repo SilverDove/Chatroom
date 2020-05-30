@@ -1,9 +1,9 @@
-package Items;
-
+package ChatroomTest;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
+
+import Items.User;
 
 public class UserTest {
 
@@ -23,6 +23,7 @@ public class UserTest {
 		User userActual = new User("INCORRECT","John","Smith","1234");
 		userActual.setUsername("JS");
 
+		
 		assertEquals(userExpected,userActual);
 	}
 
@@ -32,7 +33,7 @@ public class UserTest {
 		User userActual = new User("JS","INCORRECT","Smith","1234");
 		userActual.setFirstname("John");
 
-		assertEquals(userExpected,userActual);
+		assertEquals(userExpected.getFirstname(),userActual.getFirstname());
 	}
 
 	@Test
