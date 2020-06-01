@@ -5,7 +5,7 @@ Antoine Mairet - Clara Tricot - Stella Thammavong - Nicolas Jatob - Metagang Tab
 
 ## Introduction
 
-This application allow users to talk to each other. It is only compatible on computer. 
+This application allow users to talk to other user connected. It is only compatible on computer. 
 
 ## Prerequisite
 
