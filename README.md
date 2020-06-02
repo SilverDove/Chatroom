@@ -1,4 +1,4 @@
-# 💻 ChatRoom:software engineering project 💻
+# 💻 ChatRoom: Software engineering project 💻
 Antoine Mairet - Clara Tricot - Stella Thammavong - Nicolas Jatob - Metagang Tabou 
 
 - 3rd Year at ESIEA -
