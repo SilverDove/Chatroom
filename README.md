@@ -12,7 +12,7 @@ This application is a chatroom to which several users can get connected to in or
 
 * Fetch the release version https://github.com/SilverDove/Chatroom/releases
 
-##Project Execution
+## Project Execution
 
 To launch the server, please run the ChatRoom class first. You can then run as many client as you want with the Client class.
 
