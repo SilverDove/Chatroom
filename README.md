@@ -26,18 +26,18 @@ Tasks distribution:
 
 ## Overview
 
-* Log in 
+* Login Window 
 
 ![alt text](https://github.com/SilverDove/Chatroom/blob/master/ImageScreen/logInScreen.png?raw=true)
 
-* New account 
+* New account Window
 
 ![alt text](https://github.com/SilverDove/Chatroom/blob/master/ImageScreen/newAccountScreen.png?raw=true)
 
-* Rules
+* Rules Window
 
 ![alt text](https://github.com/SilverDove/Chatroom/blob/master/ImageScreen/rulesScreen.png?raw=true)
 
-* Main 
+* Main Window
 
 ![alt text](https://github.com/SilverDove/Chatroom/blob/master/ImageScreen/mainScreen.png?raw=true)
