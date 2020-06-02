@@ -6,7 +6,7 @@ Antoine Mairet - Clara Tricot - Metagang Tabou - Nicolas Jatob - Karen Kaspar - 
 ## Introduction
 
 
-This application is a chatroom to which several users can get connected to in order to discuss securely with each other. It is a java desktop program for chatting with which users. Discussions are stored persistently and thus they can have access to it at any time. It is implemented using a server-client model via which message exchange is done. In order to secure user's messages, AES cryptology algorithm is made use of to encipher them before transmission.
+This application is a chatroom to which several users can get connected to in order to discuss securely with each other. It is a java desktop program for chatting with other users. Discussions are stored persistently and thus they can have access to it at any time. It is implemented using a server-client model via which message exchange is done. In order to secure user's messages, AES cryptography algorithm is made use of to encipher them before transmission.
 
 ## Prerequisite
 
@@ -14,7 +14,7 @@ This application is a chatroom to which several users can get connected to in or
 
 ## Personal involvement
 
-The activities on GitHub absolutely does not represent the personal involvement. Few members of the group found it hard using github's interface, especially with eclipse because it was causing a lot of problems and as we wanted to be as effective as possible and didn't want to impair member's of the group's work, the ones that had a hard time working with github worked directly on the code with their teammates. The quantity of push/commit doesn't reflects the personal works.
+The activities on GitHub absolutely do not represent the personal involvement. Few members of the group found it hard using github's interface, especially with eclipse because it was causing a lot of problems and as we wanted to be as effective as possible and didn't want to impair member's of the group's work, the ones that had a hard time working with github worked directly on the code with their teammates. The quantity of push/commit doesn't reflects the personal works.
 
 Division of tasks:
 
