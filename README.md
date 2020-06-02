@@ -12,4 +12,16 @@ This application is a chatroom to which several users can get connected to in or
 
 * Fetch the release version https://github.com/SilverDove/Chatroom/releases
 
+## Personal involvement
+
+The activities on GitHub absolutely does not represent the personal involvement. Few members of the group found it hard using github's interface, especially with eclipse because it was causing a lot of problems and as we wanted to be as effective as possible and didn't want to impair member's of the group's work, the ones that had a hard time working with github worked directly on the code with their teamates
+
+Repartition of tasks:
+
+- GUI : Stella
+- AES part: Karen
+- Network: Metagang and Nicolas
+- Database : Antoine and Clara
+
+
 ## Overview
